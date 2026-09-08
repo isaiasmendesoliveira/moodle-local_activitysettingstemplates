@@ -53,14 +53,14 @@ The entry pages also require the native `moodle/course:manageactivities` capabil
 
 ## Field registry
 
-`classes/local/field_registry.php` centralises the rules for reusable settings.
+`classes/local/field_registry.php` centralizes the rules for reusable settings.
 
 Its responsibilities include:
 
 - detecting installed activity/resource modules;
 - providing curated definitions for core Moodle modules;
 - adding safe common course-module settings;
-- normalising stored configuration from earlier development versions;
+- normalizing stored configuration from earlier development versions;
 - formatting stored values using teacher-facing labels;
 - providing editor controls for template management;
 - handling duration controls;
@@ -80,7 +80,7 @@ Core modules deliberately use curated allow-lists. This prevents raw database fi
 3. Obtain eligible setting definitions from the field registry.
 4. Let the teacher select the reusable settings.
 5. Extract only selected safe values.
-6. Store the template as personal JSON configuration.
+6. Store the template as a personal JSON configuration.
 
 ### Management
 
@@ -118,7 +118,7 @@ The AMD module:
 - retries pending dependent values once;
 - shows an accessible post-application status near the preview.
 
-The JavaScript never submits the Moodle activity form on behalf of the teacher.
+The JavaScript never submits the Moodle activity form on the teacher's behalf.
 
 ## Compatibility analysis
 
@@ -130,7 +130,7 @@ Possible states:
 - **Attention**: the field exists but is currently disabled or otherwise dependent on the form state.
 - **Not applicable**: the field or stored option is unavailable in the current form.
 
-Status is conveyed with text and icon in addition to colour.
+Status is conveyed with text and an icon in addition to color.
 
 ## Privacy API
 
@@ -169,12 +169,12 @@ Key accessibility decisions include:
 - native buttons for actions;
 - keyboard-operable controls;
 - responsive 50/50 desktop layout with full-width stacking on smaller screens;
-- colour plus icon plus text for compatibility states;
+- color plus icon plus text for compatibility states;
 - `role="status"` and `aria-live="polite"` for dynamic feedback;
 - no automatic saving after template application.
 
 ## Tests
 
-`tests/field_registry_test.php` covers core registry behaviour including supported modules, curated controls, common settings, filtering, duration support, legacy normalization, and safe third-party discovery.
+`tests/field_registry_test.php` covers core registry behavior including supported modules, curated controls, common settings, filtering, duration support, legacy normalization, and safe third-party discovery.
 
 See [TESTING.md](TESTING.md) for manual release testing.
