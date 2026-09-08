@@ -16,9 +16,9 @@ O Activity Settings Templates estende os formulários nativos de configuração 
 Os principais callbacks ficam em `lib.php`:
 
 - `local_activitysettingstemplates_extend_navigation_course()` adiciona acesso ao gerenciamento dos modelos pessoais.
-- `local_activitysettingstemplates_coursemodule_standard_elements()` insere seleção de modelo, ações, prévia de compatibilidade e aplicação nos formulários de atividades/recursos.
+- `local_activitysettingstemplates_coursemodule_standard_elements()` insere a seleção de modelo, as ações, a prévia de compatibilidade e a aplicação nos formulários de atividades/recursos.
 
-Aplicar um modelo altera somente valores editáveis no formulário atual do navegador. A validação e o salvamento continuam sob responsabilidade do Moodle quando o professor envia o formulário nativo.
+Aplicar um modelo altera apenas os valores editáveis no formulário atual do navegador. A validação e o salvamento continuam sob responsabilidade do Moodle quando o professor envia o formulário nativo.
 
 ## Modelo de dados
 
@@ -47,7 +47,7 @@ As páginas de gerenciamento também exigem a permissão nativa para gerenciar a
 
 ## Registro de configurações
 
-`classes/local/field_registry.php` centraliza as regras do que pode ser transformado em modelo.
+`classes/local/field_registry.php` centraliza as regras sobre o que pode ser convertido em modelo.
 
 Entre suas responsabilidades estão:
 
@@ -87,13 +87,13 @@ O JavaScript não envia automaticamente o formulário da atividade.
 
 ## Privacidade
 
-`classes/privacy/provider.php` implementa a API de Privacidade do Moodle para metadados, descoberta de contextos, exportação e exclusão dos modelos pessoais.
+`classes/privacy/provider.php` implementa a API de Privacidade do Moodle para metadados, descoberta de contextos, exportação e exclusão de modelos pessoais.
 
-Nenhum dado é enviado para serviços externos.
+Nenhum dado é enviado a serviços externos.
 
 ## Segurança
 
-A implementação utiliza autenticação, contexto de curso, verificações de capability, limpeza de parâmetros, Moodle Forms, confirmação por `sesskey()` em exclusão, verificação de propriedade do modelo e listas seguras de configurações.
+A implementação utiliza autenticação, contexto de curso, verificações de capability, limpeza de parâmetros, Moodle Forms, confirmação por `sesskey()` na exclusão, verificação de propriedade do modelo e listas seguras de configurações.
 
 ## Acessibilidade e responsividade
 
