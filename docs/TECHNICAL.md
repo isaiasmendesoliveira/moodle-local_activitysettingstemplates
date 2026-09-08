@@ -22,7 +22,7 @@ Applying a template only changes editable values in the current browser form. Mo
 
 ## Data model
 
-Personal templates are stored in `local_ast_templates`.
+Personal templates are stored in `local_activitysettingstemplates`.
 
 Fields:
 

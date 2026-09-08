@@ -11,18 +11,18 @@
 
 ## Arquitectura
 
-Activity Settings Templates amplía los formularios de configuración nativos de los módulos de curso; no los sustituye.
+Activity Settings Templates amplía los formularios nativos de configuración de los módulos de curso; no los sustituye.
 
 Los principales callbacks se encuentran en `lib.php`:
 
 - `local_activitysettingstemplates_extend_navigation_course()` añade acceso a la gestión de plantillas personales.
 - `local_activitysettingstemplates_coursemodule_standard_elements()` inserta el selector, las acciones, la vista previa de compatibilidad y la aplicación en los formularios de actividades/recursos.
 
-Aplicar una plantilla modifica únicamente los valores editables del formulario actual. Moodle conserva la validación y el guardado cuando el docente envía el formulario nativo.
+Aplicar una plantilla modifica únicamente valores editables del formulario actual. Moodle conserva la validación y el guardado cuando el docente envía el formulario nativo.
 
 ## Modelo de datos
 
-Las plantillas personales se almacenan en `local_ast_templates` con propietario, nombre, descripción, tipo de módulo, configuración JSON y marcas de tiempo.
+Las plantillas personales se almacenan en `local_activitysettingstemplates` con propietario, nombre, descripción, tipo de módulo, configuración JSON y marcas de tiempo.
 
 El índice `userid, moduletype` facilita el filtrado por usuario y tipo de actividad.
 
@@ -38,7 +38,7 @@ El índice `userid, moduletype` facilita el filtrado por usuario y tipo de activ
 
 ## Registro de configuraciones
 
-`classes/local/field_registry.php` concentra las reglas que determinan qué configuraciones pueden reutilizarse.
+`classes/local/field_registry.php` concentra las reglas para determinar qué configuraciones pueden reutilizarse.
 
 Incluye:
 
@@ -56,28 +56,28 @@ Las listas seleccionadas evitan exponer campos internos, calculados, relacionale
 
 ## Ciclo de vida
 
-- `create.php` + `create_template_form.php`: creación a partir de una actividad guardada.
-- `index.php`: gestión de plantillas personalizadas.
-- `edit.php` + `edit_template_form.php`: edición de nombre, la descripción, las configuraciones incluidas y los valores.
-- `delete.php`: eliminación confirmada mediante `sesskey()`.
+- `create.php` + `create_template_form.php`: creación desde una actividad guardada.
+- `index.php`: gestión de plantillas personales.
+- `edit.php` + `edit_template_form.php`: edición de nombre, descripción, configuraciones incluidas y valores.
+- `delete.php`: eliminación confirmada con `sesskey()`.
 
 El tipo de actividad permanece fijo durante la edición.
 
 ## JavaScript
 
-`amd/src/applytemplate.js` gestiona la selección, la vista previa, la aplicación segura, los eventos de dependencias, el segundo intento de campos dependientes y la retroalimentación accesible.
+`amd/src/applytemplate.js` gestiona selección, vista previa, aplicación segura, eventos de dependencias, segundo intento de campos dependientes y retroalimentación accesible.
 
 El módulo JavaScript nunca envía automáticamente el formulario de Moodle.
 
 ## Privacidad
 
-`classes/privacy/provider.php` implementa la API de Privacidad de Moodle para la gestión de metadatos, la exportación y la eliminación de datos personales de las plantillas.
+`classes/privacy/provider.php` implementa la API de Privacidad de Moodle para metadatos, exportación y eliminación de datos personales de plantillas.
 
 No se transmiten datos a servicios externos.
 
 ## Seguridad
 
-La implementación utiliza autenticación, contextos de curso, comprobación de capacidades, limpieza de parámetros, Moodle Forms, `sesskey()` para acciones destructivas, comprobación de propiedades y listas seguras de configuraciones.
+La implementación utiliza autenticación, contextos de curso, comprobación de capacidades, limpieza de parámetros, Moodle Forms, `sesskey()` para acciones destructivas, comprobación de propiedad y listas seguras de configuraciones.
 
 ## Accesibilidad y diseño responsivo
 

@@ -1,5 +1,6 @@
 # Changelog
 
+- Database table naming aligned with the Moodle component prefix for Marketplace validation.
 All notable public changes to **Activity Settings Templates** are documented in this file.
 
 ## 1.0.0 - 2026-09-08

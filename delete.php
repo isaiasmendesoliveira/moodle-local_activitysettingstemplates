@@ -34,7 +34,7 @@ $context = context_course::instance($course->id);
 require_capability('local/activitysettingstemplates:manage', $context);
 require_capability('moodle/course:manageactivities', $context);
 
-$preset = $DB->get_record('local_ast_templates', ['id' => $id, 'userid' => $USER->id], '*', MUST_EXIST);
+$preset = $DB->get_record('local_activitysettingstemplates', ['id' => $id, 'userid' => $USER->id], '*', MUST_EXIST);
 $returnurl = new moodle_url('/local/activitysettingstemplates/index.php', ['courseid' => $courseid]);
 
 $PAGE->set_url(new moodle_url('/local/activitysettingstemplates/delete.php', ['id' => $id, 'courseid' => $courseid]));
@@ -45,7 +45,7 @@ $PAGE->set_heading(format_string($course->fullname));
 
 if ($confirm) {
     require_sesskey();
-    $DB->delete_records('local_ast_templates', ['id' => $preset->id, 'userid' => $USER->id]);
+    $DB->delete_records('local_activitysettingstemplates', ['id' => $preset->id, 'userid' => $USER->id]);
     redirect($returnurl, get_string('presetdeleted', 'local_activitysettingstemplates'), null,
         \core\output\notification::NOTIFY_SUCCESS);
 }

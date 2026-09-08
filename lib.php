@@ -79,7 +79,7 @@ function local_activitysettingstemplates_coursemodule_standard_elements(
     }
 
     $presets = $DB->get_records(
-        'local_ast_templates',
+        'local_activitysettingstemplates',
         ['userid' => $USER->id, 'moduletype' => $moduletype],
         'name ASC, id ASC'
     );

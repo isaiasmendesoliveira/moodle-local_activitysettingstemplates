@@ -15,7 +15,7 @@
 // along with Moodle. If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Version information.
+ * Upgrade steps for Activity Settings Templates.
  *
  * @package   local_activitysettingstemplates
  * @copyright 2026 Isaias Mendes de Oliveira <isaiasmendes@gmail.com>
@@ -24,9 +24,27 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_activitysettingstemplates';
-$plugin->version   = 2026090813;
-$plugin->requires = 2024100700; // Moodle 4.5 LTS.
-$plugin->supported = [405, 502];
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release   = '1.0.0';
+/**
+ * Upgrade Activity Settings Templates.
+ *
+ * @param int $oldversion Previously installed version.
+ * @return bool
+ */
+function xmldb_local_activitysettingstemplates_upgrade(int $oldversion): bool {
+    global $DB;
+
+    $dbman = $DB->get_manager();
+
+    if ($oldversion < 2026090813) {
+        $oldtable = new xmldb_table('local_ast_templates');
+        $newtable = new xmldb_table('local_activitysettingstemplates');
+
+        if ($dbman->table_exists($oldtable) && !$dbman->table_exists($newtable)) {
+            $dbman->rename_table($oldtable, 'local_activitysettingstemplates');
+        }
+
+        upgrade_plugin_savepoint(true, 2026090813, 'local', 'activitysettingstemplates');
+    }
+
+    return true;
+}

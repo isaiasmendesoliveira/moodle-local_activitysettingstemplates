@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/activitysettingstemplates/db" VERSION="2026090800" COMMENT="XMLDB file for local_activitysettingstemplates"
+<XMLDB PATH="local/activitysettingstemplates/db" VERSION="2026090813" COMMENT="XMLDB file for local_activitysettingstemplates"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
-    <TABLE NAME="local_ast_templates" COMMENT="Personal reusable activity settings templates">
+    <TABLE NAME="local_activitysettingstemplates" COMMENT="Personal reusable activity settings templates">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -16,10 +16,10 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="userid_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="userid_moduletype_ix" UNIQUE="false" FIELDS="userid, moduletype"/>
+        <INDEX NAME="userid-moduletype" UNIQUE="false" FIELDS="userid, moduletype"/>
       </INDEXES>
     </TABLE>
   </TABLES>

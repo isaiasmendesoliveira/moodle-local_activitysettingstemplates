@@ -56,7 +56,7 @@ $PAGE->set_course($course);
 $PAGE->set_title(get_string('managepresets', 'local_activitysettingstemplates'));
 $PAGE->set_heading(format_string($course->fullname));
 
-$presets = $DB->get_records('local_ast_templates', ['userid' => $USER->id], 'moduletype ASC, name ASC');
+$presets = $DB->get_records('local_activitysettingstemplates', ['userid' => $USER->id], 'moduletype ASC, name ASC');
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('managepresets', 'local_activitysettingstemplates'));

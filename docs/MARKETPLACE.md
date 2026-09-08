@@ -18,7 +18,7 @@ Local plugin
 
 `1.0.0`
 
-Internal Moodle version: `2026090812`
+Internal Moodle version: `2026090813`
 
 ## Short description
 

@@ -38,7 +38,7 @@ function xmldb_local_activitysettingstemplates_install(): bool {
 
     $oldrecords = $DB->get_records('local_activitypresets', null, 'id ASC');
     foreach ($oldrecords as $oldrecord) {
-        $duplicate = $DB->record_exists('local_ast_templates', [
+        $duplicate = $DB->record_exists('local_activitysettingstemplates', [
             'userid' => $oldrecord->userid,
             'name' => $oldrecord->name,
             'moduletype' => $oldrecord->moduletype,
@@ -56,7 +56,7 @@ function xmldb_local_activitysettingstemplates_install(): bool {
             'timecreated' => $oldrecord->timecreated,
             'timemodified' => $oldrecord->timemodified,
         ];
-        $DB->insert_record('local_ast_templates', $record);
+        $DB->insert_record('local_activitysettingstemplates', $record);
     }
 
     return true;

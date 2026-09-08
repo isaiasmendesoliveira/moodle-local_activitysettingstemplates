@@ -37,7 +37,7 @@ $context = context_course::instance($course->id);
 require_capability('local/activitysettingstemplates:manage', $context);
 require_capability('moodle/course:manageactivities', $context);
 
-$preset = $DB->get_record('local_ast_templates', ['id' => $id, 'userid' => $USER->id], '*', MUST_EXIST);
+$preset = $DB->get_record('local_activitysettingstemplates', ['id' => $id, 'userid' => $USER->id], '*', MUST_EXIST);
 if (!field_registry::is_supported($preset->moduletype)) {
     throw new moodle_exception('unsupportedmodule', 'local_activitysettingstemplates');
 }
@@ -104,7 +104,7 @@ if ($data = $form->get_data()) {
     $preset->description = trim((string)$data->description);
     $preset->configjson = json_encode($newconfig, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     $preset->timemodified = time();
-    $DB->update_record('local_ast_templates', $preset);
+    $DB->update_record('local_activitysettingstemplates', $preset);
 
     redirect(
         $returnurl,

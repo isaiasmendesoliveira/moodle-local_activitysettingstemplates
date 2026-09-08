@@ -55,7 +55,7 @@ class provider implements
      * @return collection
      */
     public static function get_metadata(collection $collection): collection {
-        $collection->add_database_table('local_ast_templates', [
+        $collection->add_database_table('local_activitysettingstemplates', [
             'userid' => 'privacy:metadata:local_activitysettingstemplates:userid',
             'name' => 'privacy:metadata:local_activitysettingstemplates:name',
             'description' => 'privacy:metadata:local_activitysettingstemplates:description',
@@ -78,7 +78,7 @@ class provider implements
         global $DB;
 
         $contextlist = new contextlist();
-        if ($DB->record_exists('local_ast_templates', ['userid' => $userid])) {
+        if ($DB->record_exists('local_activitysettingstemplates', ['userid' => $userid])) {
             $contextlist->add_user_context($userid);
         }
         return $contextlist;
@@ -98,7 +98,7 @@ class provider implements
             return;
         }
 
-        $records = $DB->get_records('local_ast_templates', ['userid' => $userid], 'id ASC');
+        $records = $DB->get_records('local_activitysettingstemplates', ['userid' => $userid], 'id ASC');
         if (!$records) {
             return;
         }
@@ -130,7 +130,7 @@ class provider implements
         global $DB;
 
         if ($context->contextlevel === CONTEXT_USER) {
-            $DB->delete_records('local_ast_templates', ['userid' => $context->instanceid]);
+            $DB->delete_records('local_activitysettingstemplates', ['userid' => $context->instanceid]);
         }
     }
 
@@ -145,7 +145,7 @@ class provider implements
         $userid = $contextlist->get_user()->id;
         $usercontext = context_user::instance($userid);
         if (in_array($usercontext->id, $contextlist->get_contextids(), true)) {
-            $DB->delete_records('local_ast_templates', ['userid' => $userid]);
+            $DB->delete_records('local_activitysettingstemplates', ['userid' => $userid]);
         }
     }
 
@@ -162,7 +162,7 @@ class provider implements
             return;
         }
 
-        if ($DB->record_exists('local_ast_templates', ['userid' => $context->instanceid])) {
+        if ($DB->record_exists('local_activitysettingstemplates', ['userid' => $context->instanceid])) {
             $userlist->add_user($context->instanceid);
         }
     }
@@ -182,7 +182,7 @@ class provider implements
 
         $userids = $userlist->get_userids();
         if (in_array($context->instanceid, $userids, true)) {
-            $DB->delete_records('local_ast_templates', ['userid' => $context->instanceid]);
+            $DB->delete_records('local_activitysettingstemplates', ['userid' => $context->instanceid]);
         }
     }
 }

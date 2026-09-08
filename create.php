@@ -104,7 +104,7 @@ if ($data = $form->get_data()) {
         'timecreated' => time(),
         'timemodified' => time(),
     ];
-    $DB->insert_record('local_ast_templates', $record);
+    $DB->insert_record('local_activitysettingstemplates', $record);
 
     redirect(
         new moodle_url('/local/activitysettingstemplates/index.php', ['courseid' => $course->id]),
