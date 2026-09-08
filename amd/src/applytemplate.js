@@ -327,7 +327,8 @@ const getDisplayValue = (name, value, strings, fieldTypes = {}) => {
 /**
  * Write an accessible status message beneath the template controls.
  *
- * @param {string} message
+ * @param {string} message Status message to display.
+ * @param {string} variant Alert variant: success, warning, or danger.
  */
 const setStatus = (message, variant = 'success') => {
     const status = document.getElementById('local-activitysettingstemplates-status');
