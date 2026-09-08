@@ -1,0 +1,659 @@
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * Apply and preview a saved template in the native Moodle activity form.
+ *
+ * Values are only placed in editable form fields. Moodle saves them later
+ * through its normal activity form workflow when the teacher submits the form.
+ *
+ * @module local_activitysettingstemplates/applytemplate
+ * @copyright 2026 Isaias Mendes de Oliveira <isaiasmendes@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/**
+ * Convert a stored scalar to a checkbox state.
+ *
+ * @param {*} value
+ * @returns {boolean}
+ */
+const toBoolean = (value) => {
+    if (typeof value === 'boolean') {
+        return value;
+    }
+    if (typeof value === 'number') {
+        return value !== 0;
+    }
+    const normalised = String(value).toLowerCase();
+    return !['', '0', 'false', 'no', 'off'].includes(normalised);
+};
+
+/**
+ * Whether an element can safely be changed by the template UI.
+ *
+ * @param {HTMLElement} element
+ * @returns {boolean}
+ */
+const isEditable = (element) => {
+    return element.type !== 'hidden' && !element.disabled && !element.readOnly;
+};
+
+/**
+ * Trigger the events Moodle form logic commonly listens to.
+ *
+ * @param {HTMLElement} element
+ */
+const triggerEvents = (element) => {
+    element.dispatchEvent(new Event('input', {bubbles: true}));
+    element.dispatchEvent(new Event('change', {bubbles: true}));
+};
+
+/**
+ * Whether a select contains the requested value.
+ *
+ * @param {HTMLSelectElement} element
+ * @param {*} value
+ * @returns {boolean}
+ */
+const selectHasValue = (element, value) => {
+    return Array.from(element.options).some((option) => String(option.value) === String(value));
+};
+
+/**
+ * Analyse whether a duration control can currently receive a stored value.
+ *
+ * @param {string} name
+ * @returns {Object}
+ */
+const analyseDurationField = (name) => {
+    const number = document.getElementsByName(`${name}[number]`)[0];
+    const unit = document.getElementsByName(`${name}[timeunit]`)[0];
+
+    if (!number || !unit) {
+        return {status: 'unavailable', reason: 'missing'};
+    }
+    if (!isEditable(number) || !isEditable(unit)) {
+        return {status: 'conditional', reason: 'disabled'};
+    }
+    return {status: 'applicable', reason: 'available'};
+};
+
+/**
+ * Analyse whether a native Moodle form field can receive a stored value.
+ *
+ * This does not change the form. It is used only for the compatibility preview.
+ *
+ * @param {string} name
+ * @param {*} value
+ * @param {Object} fieldTypes
+ * @returns {Object}
+ */
+const analyseNamedField = (name, value, fieldTypes = {}) => {
+    if (fieldTypes[name] === 'duration') {
+        return analyseDurationField(name);
+    }
+
+    const elements = Array.from(document.getElementsByName(name));
+    if (elements.length === 0) {
+        return {status: 'unavailable', reason: 'missing'};
+    }
+
+    if (name === 'completionminattempts') {
+        const enablers = Array.from(document.getElementsByName('completionminattemptsenabled'));
+        if (enablers.some(isEditable)) {
+            return {status: 'applicable', reason: 'available'};
+        }
+    }
+
+    const radios = elements.filter((element) => element.type === 'radio');
+    if (radios.length > 0) {
+        const matching = radios.find((radio) => String(radio.value) === String(value));
+        if (!matching) {
+            return {status: 'unavailable', reason: 'invalidvalue'};
+        }
+        return isEditable(matching)
+            ? {status: 'applicable', reason: 'available'}
+            : {status: 'conditional', reason: 'disabled'};
+    }
+
+    const selects = elements.filter((element) => element.tagName === 'SELECT');
+    if (selects.length > 0) {
+        const withValue = selects.filter((element) => selectHasValue(element, value));
+        if (withValue.length === 0) {
+            return {status: 'unavailable', reason: 'invalidvalue'};
+        }
+        return withValue.some(isEditable)
+            ? {status: 'applicable', reason: 'available'}
+            : {status: 'conditional', reason: 'disabled'};
+    }
+
+    const supported = elements.filter((element) => {
+        if (element.type === 'checkbox') {
+            return true;
+        }
+        if (element.tagName === 'TEXTAREA') {
+            return true;
+        }
+        return ['text', 'number', 'email', 'url', 'password', 'search', 'tel'].includes(element.type);
+    });
+
+    if (supported.length === 0) {
+        return {status: 'unavailable', reason: 'missing'};
+    }
+    return supported.some(isEditable)
+        ? {status: 'applicable', reason: 'available'}
+        : {status: 'conditional', reason: 'disabled'};
+};
+
+/**
+ * Set a Moodle duration control from a stored value in seconds.
+ *
+ * @param {string} name
+ * @param {*} value
+ * @returns {boolean}
+ */
+const setDurationField = (name, value) => {
+    const number = document.getElementsByName(`${name}[number]`)[0];
+    const unit = document.getElementsByName(`${name}[timeunit]`)[0];
+    if (!number || !unit || !isEditable(number) || !isEditable(unit)) {
+        return false;
+    }
+
+    const seconds = Math.max(0, Number(value) || 0);
+    const units = Array.from(unit.options)
+        .map((option) => Number(option.value))
+        .filter((item) => Number.isFinite(item) && item > 0)
+        .sort((a, b) => b - a);
+    let chosen = units[units.length - 1] || 1;
+    for (const candidate of units) {
+        if (seconds === 0 || seconds % candidate === 0) {
+            chosen = candidate;
+            break;
+        }
+    }
+
+    number.value = String(seconds === 0 ? 0 : seconds / chosen);
+    unit.value = String(chosen);
+    triggerEvents(number);
+    triggerEvents(unit);
+    return true;
+};
+
+/**
+ * Set editable native form elements with a given name.
+ *
+ * @param {string} name
+ * @param {*} value
+ * @param {Object} fieldTypes
+ * @returns {boolean} True if at least one matching element was changed.
+ */
+const setNamedField = (name, value, fieldTypes = {}) => {
+    const elements = Array.from(document.getElementsByName(name));
+    if (elements.length === 0) {
+        if (fieldTypes[name] === 'duration') {
+            return setDurationField(name, value);
+        }
+        return false;
+    }
+
+    // Moodle uses an enable checkbox plus a numeric field for the quiz minimum-attempts completion rule.
+    if (name === 'completionminattempts') {
+        const enabled = Array.from(document.getElementsByName('completionminattemptsenabled')).filter(isEditable);
+        enabled.forEach((element) => {
+            element.checked = Number(value) > 0;
+            triggerEvents(element);
+        });
+    }
+
+    const radios = elements.filter((element) => element.type === 'radio');
+    if (radios.length > 0) {
+        const editableRadios = radios.filter(isEditable);
+        const matchingRadio = editableRadios.find((radio) => String(radio.value) === String(value));
+        if (!matchingRadio) {
+            return false;
+        }
+
+        editableRadios.forEach((radio) => {
+            radio.checked = radio === matchingRadio;
+            triggerEvents(radio);
+        });
+        return true;
+    }
+
+    let changed = false;
+    elements.filter(isEditable).forEach((element) => {
+        if (element.type === 'checkbox') {
+            element.checked = toBoolean(value);
+            triggerEvents(element);
+            changed = true;
+            return;
+        }
+
+        if (element.tagName === 'SELECT') {
+            if (!selectHasValue(element, value)) {
+                return;
+            }
+            element.value = String(value);
+            triggerEvents(element);
+            changed = true;
+            return;
+        }
+
+        if (element.tagName === 'TEXTAREA' ||
+                ['text', 'number', 'email', 'url', 'password', 'search', 'tel'].includes(element.type)) {
+            element.value = String(value);
+            triggerEvents(element);
+            changed = true;
+        }
+    });
+
+    return changed;
+};
+
+/**
+ * Obtain a human-readable representation of a stored value from the current form.
+ * This lets the preview use Moodle's own labels whenever possible.
+ *
+ * @param {string} name
+ * @param {*} value
+ * @param {Object} strings
+ * @param {Object} fieldTypes
+ * @returns {string}
+ */
+const getDisplayValue = (name, value, strings, fieldTypes = {}) => {
+    const elements = Array.from(document.getElementsByName(name));
+
+    const select = elements.find((element) => element.tagName === 'SELECT');
+    if (select) {
+        const option = Array.from(select.options).find((item) => String(item.value) === String(value));
+        if (option) {
+            return option.textContent.trim();
+        }
+    }
+
+    const radio = elements.find((element) => element.type === 'radio' && String(element.value) === String(value));
+    if (radio) {
+        const label = Array.from(document.getElementsByTagName('label')).find((item) => item.htmlFor === radio.id);
+        if (label) {
+            return label.textContent.trim();
+        }
+        if (radio.parentElement) {
+            const text = radio.parentElement.textContent.trim();
+            if (text) {
+                return text;
+            }
+        }
+    }
+
+    const checkbox = elements.find((element) => element.type === 'checkbox');
+    if (checkbox) {
+        return toBoolean(value) ? strings.yes : strings.no;
+    }
+
+    if (fieldTypes[name] === 'duration') {
+        const seconds = Math.max(0, Number(value) || 0);
+        if (seconds === 0) {
+            return strings.none || '0';
+        }
+        const units = [
+            [86400, strings.days || 'days'],
+            [3600, strings.hours || 'hours'],
+            [60, strings.minutes || 'minutes'],
+            [1, strings.seconds || 'seconds'],
+        ];
+        for (const [unit, label] of units) {
+            if (seconds % unit === 0) {
+                return `${seconds / unit} ${label}`;
+            }
+        }
+    }
+
+    return String(value);
+};
+
+/**
+ * Write an accessible status message beneath the template controls.
+ *
+ * @param {string} message
+ */
+const setStatus = (message, variant = 'success') => {
+    const status = document.getElementById('local-activitysettingstemplates-status');
+    if (!status) {
+        return;
+    }
+
+    status.textContent = message;
+    status.classList.remove('alert-success', 'alert-warning', 'alert-danger');
+
+    if (!message) {
+        status.classList.add('d-none');
+        return;
+    }
+
+    const alertClass = variant === 'warning' ? 'alert-warning'
+        : variant === 'danger' ? 'alert-danger'
+            : 'alert-success';
+    status.classList.add(alertClass);
+    status.classList.remove('d-none');
+};
+
+/**
+ * Hide and clear the template preview.
+ */
+const clearPreview = () => {
+    const preview = document.getElementById('local-activitysettingstemplates-preview');
+    const description = document.getElementById('local-activitysettingstemplates-preview-description');
+    const summary = document.getElementById('local-activitysettingstemplates-preview-summary');
+    const list = document.getElementById('local-activitysettingstemplates-preview-list');
+
+    if (list) {
+        list.replaceChildren();
+    }
+    if (summary) {
+        summary.replaceChildren();
+        summary.classList.add('d-none');
+    }
+    if (description) {
+        description.textContent = '';
+        description.classList.add('d-none');
+    }
+    if (preview) {
+        preview.classList.add('d-none');
+    }
+};
+
+/**
+ * Build a coloured summary badge.
+ *
+ * @param {string} text
+ * @param {string} cssClass
+ * @returns {HTMLElement}
+ */
+const createSummaryBadge = (text, cssClass) => {
+    const badge = document.createElement('span');
+    badge.className = `badge ${cssClass} me-2 mr-2 mb-1`;
+    badge.textContent = text;
+    return badge;
+};
+
+/**
+ * Return localised visual metadata for a compatibility state.
+ *
+ * @param {Object} analysis
+ * @param {Object} strings
+ * @returns {Object}
+ */
+const getStatusPresentation = (analysis, strings) => {
+    if (analysis.status === 'applicable') {
+        return {
+            badge: strings.statusapplicable,
+            badgeClass: 'badge-success bg-success text-white',
+            icon: '✓',
+            reason: strings.reasonapplicable,
+            itemClass: 'border-start border-left border-success ps-3 pl-3',
+        };
+    }
+    if (analysis.status === 'conditional') {
+        return {
+            badge: strings.statusconditional,
+            badgeClass: 'badge-warning bg-warning text-dark',
+            icon: '!',
+            reason: strings.reasonconditional,
+            itemClass: 'border-start border-left border-warning ps-3 pl-3',
+        };
+    }
+    return {
+        badge: strings.statusunavailable,
+        badgeClass: 'badge-danger bg-danger text-white',
+        icon: '×',
+        reason: analysis.reason === 'invalidvalue' ? strings.reasoninvalidvalue : strings.reasonmissingfield,
+        itemClass: 'border-start border-left border-danger ps-3 pl-3',
+    };
+};
+
+/**
+ * Render one compatibility section.
+ *
+ * @param {HTMLElement} container
+ * @param {string} title
+ * @param {Array} entries
+ * @param {Object} fieldLabels
+ * @param {Object} strings
+ * @param {Object} fieldTypes
+ */
+const renderCompatibilitySection = (container, title, entries, fieldLabels, strings, fieldTypes) => {
+    if (entries.length === 0) {
+        return;
+    }
+
+    const heading = document.createElement('div');
+    heading.className = 'fw-bold font-weight-bold mb-2 mt-3';
+    heading.textContent = title;
+    container.append(heading);
+
+    const list = document.createElement('div');
+    list.className = 'list-group list-group-flush';
+
+    entries.forEach(({field, value, analysis}) => {
+        const presentation = getStatusPresentation(analysis, strings);
+        const item = document.createElement('div');
+        item.className = `list-group-item px-0 py-2 ${presentation.itemClass}`;
+
+        const top = document.createElement('div');
+        top.className = 'd-flex flex-wrap justify-content-between align-items-start gap-2';
+
+        const setting = document.createElement('div');
+        setting.className = 'me-2 mr-2';
+        const label = document.createElement('strong');
+        label.textContent = `${fieldLabels[field] || field}: `;
+        const displayValue = document.createElement('span');
+        displayValue.textContent = getDisplayValue(field, value, strings, fieldTypes);
+        setting.append(label, displayValue);
+
+        const badge = document.createElement('span');
+        badge.className = `badge ${presentation.badgeClass}`;
+        const icon = document.createElement('span');
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = `${presentation.icon} `;
+        badge.append(icon, document.createTextNode(presentation.badge));
+
+        const reason = document.createElement('div');
+        reason.className = 'small mt-1 text-muted';
+        reason.textContent = presentation.reason;
+
+        top.append(setting, badge);
+        item.append(top, reason);
+        list.append(item);
+    });
+
+    container.append(list);
+};
+
+/**
+ * Render the settings stored in the selected template before it is applied.
+ *
+ * @param {Object} preset
+ * @param {Object} fieldLabels
+ * @param {Object} strings
+ * @param {Object} fieldTypes
+ */
+const renderPreview = (preset, fieldLabels, strings, fieldTypes = {}) => {
+    clearPreview();
+
+    const preview = document.getElementById('local-activitysettingstemplates-preview');
+    const description = document.getElementById('local-activitysettingstemplates-preview-description');
+    const summary = document.getElementById('local-activitysettingstemplates-preview-summary');
+    const list = document.getElementById('local-activitysettingstemplates-preview-list');
+
+    if (!preview || !summary || !list || !preset || !preset.config) {
+        return;
+    }
+
+    if (description && preset.description) {
+        description.textContent = preset.description;
+        description.classList.remove('d-none');
+    }
+
+    const analysed = Object.entries(preset.config).map(([field, value]) => ({
+        field,
+        value,
+        analysis: analyseNamedField(field, value, fieldTypes),
+    }));
+
+    const applicable = analysed.filter((entry) => entry.analysis.status === 'applicable');
+    const conditional = analysed.filter((entry) => entry.analysis.status === 'conditional');
+    const unavailable = analysed.filter((entry) => entry.analysis.status === 'unavailable');
+
+    summary.append(
+        createSummaryBadge(strings.previewtotal.replace('{count}', analysed.length), 'badge-secondary bg-secondary text-white'),
+        createSummaryBadge(strings.previewapplicable.replace('{count}', applicable.length), 'badge-success bg-success text-white')
+    );
+    if (conditional.length > 0) {
+        summary.append(createSummaryBadge(
+            strings.previewconditional.replace('{count}', conditional.length),
+            'badge-warning bg-warning text-dark'
+        ));
+    }
+    if (unavailable.length > 0) {
+        summary.append(createSummaryBadge(
+            strings.previewunavailable.replace('{count}', unavailable.length),
+            'badge-danger bg-danger text-white'
+        ));
+    }
+    summary.classList.remove('d-none');
+
+    // Problems are deliberately shown first so the teacher can identify them without scanning the entire model.
+    renderCompatibilitySection(
+        list,
+        strings.previewattention,
+        [...unavailable, ...conditional],
+        fieldLabels,
+        strings,
+        fieldTypes
+    );
+    renderCompatibilitySection(
+        list,
+        strings.previewready,
+        applicable,
+        fieldLabels,
+        strings,
+        fieldTypes
+    );
+
+    preview.classList.remove('d-none');
+};
+
+/**
+ * Apply all possible settings, retrying once after Moodle dependency rules react.
+ *
+ * @param {Object} config
+ * @param {Object} fieldTypes
+ * @returns {Object}
+ */
+const applyWithRetry = (config, fieldTypes) => {
+    const appliedFields = new Set();
+    let pending = Object.entries(config);
+
+    for (let pass = 0; pass < 2 && pending.length > 0; pass++) {
+        const retry = [];
+        pending.forEach(([field, value]) => {
+            if (setNamedField(field, value, fieldTypes)) {
+                appliedFields.add(field);
+            } else {
+                retry.push([field, value]);
+            }
+        });
+        pending = retry;
+    }
+
+    return {
+        appliedFields,
+        skippedFields: pending.map(([field]) => field),
+    };
+};
+
+/**
+ * Initialise template preview and application.
+ *
+ * @param {Object} presets Mapping template id => {config, description}.
+ * @param {Object} fieldLabels Mapping native form field => human-readable label.
+ * @param {Object} strings Localised status strings.
+ * @param {Object} fieldTypes Mapping native form field => editor control type.
+ */
+export const init = (presets, fieldLabels, strings, fieldTypes = {}) => {
+    // Keep navigation controls as real Bootstrap buttons while preserving their
+    // navigation behaviour. This mirrors the native button markup used by Moodle
+    // and avoids element-specific text alignment differences from <a class="btn">.
+    document.querySelectorAll('.local-ast-nav-button[data-url]').forEach((navbutton) => {
+        navbutton.addEventListener('click', (event) => {
+            event.preventDefault();
+            const url = navbutton.dataset.url;
+            if (url) {
+                window.location.assign(url);
+            }
+        });
+    });
+
+    const select = document.getElementById('id_local_activitysettingstemplates_selector');
+    const button = document.getElementById('id_local_activitysettingstemplates_apply');
+
+    if (!select || !button) {
+        return;
+    }
+
+    const updateSelection = () => {
+        const presetId = String(select.value || '0');
+        const preset = presets[presetId];
+
+        button.disabled = !preset;
+        setStatus('');
+
+        if (preset) {
+            renderPreview(preset, fieldLabels, strings, fieldTypes);
+        } else {
+            clearPreview();
+        }
+    };
+
+    button.disabled = true;
+    select.addEventListener('change', updateSelection);
+    updateSelection();
+
+    button.addEventListener('click', (event) => {
+        event.preventDefault();
+        const presetId = String(select.value || '0');
+        const preset = presets[presetId];
+
+        if (!preset || !preset.config) {
+            setStatus(strings.choose, 'warning');
+            select.focus();
+            return;
+        }
+
+        const result = applyWithRetry(preset.config, fieldTypes);
+
+        // Re-render after dependent Moodle form controls have reacted to the changes.
+        // Compatibility details remain visible in the preview, so the post-apply
+        // message can stay concise and avoid repeating a long list of settings.
+        renderPreview(preset, fieldLabels, strings, fieldTypes);
+
+        if (result.skippedFields.length > 0) {
+            setStatus(strings.appliedwithskips);
+        } else {
+            setStatus(strings.applied);
+        }
+    });
+};

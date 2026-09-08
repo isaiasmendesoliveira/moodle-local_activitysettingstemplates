@@ -1,0 +1,35 @@
+name: Feature request
+description: Suggest a teacher-centered improvement for Activity Settings Templates
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Teacher problem or use case
+      description: Describe the workflow, repetition, uncertainty, or cognitive load that should be reduced.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the behaviour you would like to see.
+    validations:
+      required: true
+  - type: input
+    id: activity
+    attributes:
+      label: Activity/resource type, if relevant
+      placeholder: e.g. Quiz, Forum, all activities
+  - type: textarea
+    id: accessibility
+    attributes:
+      label: Accessibility or responsive considerations
+      description: Include any keyboard, screen-reader, zoom, mobile, or visual considerations you have identified.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add examples or screenshots using non-sensitive test data.

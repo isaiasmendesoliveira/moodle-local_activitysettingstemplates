@@ -1,0 +1,117 @@
+/*
+ * Activity Settings Templates - teacher-facing activity form layout.
+ *
+ * Scope all changes to this plugin so Moodle's global form layout remains intact.
+ */
+
+/* The complete plugin panel must use the full width of Moodle's form container. */
+#fitem_id_local_activitysettingstemplates_panel {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+#fitem_id_local_activitysettingstemplates_panel > .col-form-label {
+    display: none !important;
+}
+
+#fitem_id_local_activitysettingstemplates_panel > .felement,
+#fitem_id_local_activitysettingstemplates_panel > .col-md-9 {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0 !important;
+}
+
+.local-ast-form-panel {
+    width: 100%;
+}
+
+/* Bootstrap 4 does not provide g-* utilities. Keep the intended spacing in
+   Moodle themes regardless of whether g-3 is available. */
+.local-ast-management-row,
+.local-ast-selection-row {
+    row-gap: 1rem;
+}
+
+/* Management and action buttons intentionally use Bootstrap's native button
+   metrics. Do not override line-height, vertical alignment, padding or internal
+   text positioning here; this keeps them visually identical to native Moodle/
+   Bootstrap buttons. */
+
+/* Keep label and selector visually aligned as one control. */
+.local-ast-template-inputgroup {
+    min-height: 44px;
+}
+
+.local-ast-template-inputgroup .input-group-text,
+.local-ast-template-inputgroup .local-ast-template-select {
+    min-height: 44px;
+}
+
+.local-ast-template-inputgroup .input-group-text {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+.local-ast-template-select {
+    min-width: 0;
+}
+
+/* Compatibility/settings area always uses the complete row. */
+.local-ast-preview,
+#local-activitysettingstemplates-preview,
+#local-activitysettingstemplates-preview-list,
+#local-activitysettingstemplates-preview-list .list-group {
+    width: 100%;
+    max-width: 100%;
+}
+
+.local-ast-preview {
+    overflow-wrap: anywhere;
+}
+
+/* Preserve clearly visible keyboard focus. This complements, rather than replaces,
+   the theme's native focus treatment. */
+.local-ast-form-panel a:focus-visible,
+.local-ast-form-panel button:focus-visible,
+.local-ast-form-panel select:focus-visible {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+}
+
+/* On smaller screens each action occupies the full row. */
+@media (max-width: 991.98px) {
+    .local-ast-management-row,
+    .local-ast-selection-row {
+        row-gap: .75rem;
+    }
+}
+
+/* At very narrow widths, allow the input group to reflow without clipping the
+   select or its label. */
+@media (max-width: 575.98px) {
+    .local-ast-template-inputgroup {
+        flex-wrap: wrap;
+    }
+
+    .local-ast-template-inputgroup .input-group-text {
+        flex: 0 0 auto;
+    }
+
+    .local-ast-template-inputgroup .local-ast-template-select {
+        flex: 1 1 12rem;
+        width: 1%;
+    }
+}
+
+/* Immediate feedback after applying a template. Keep it close to the action and
+   before the compatibility preview so the teacher does not need to search the page
+   for confirmation. The alert also remains an aria-live status region. */
+.local-ast-apply-status {
+    width: 100%;
+    border-left-width: .25rem;
+    font-weight: 500;
+}

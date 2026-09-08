@@ -1,0 +1,68 @@
+name: Bug report
+description: Report a reproducible problem in Activity Settings Templates
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve Activity Settings Templates. Please remove personal data, credentials, and private URLs from reports and screenshots.
+  - type: input
+    id: moodle
+    attributes:
+      label: Moodle version
+      placeholder: e.g. 5.2.2
+    validations:
+      required: true
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin version
+      placeholder: e.g. 1.0.0
+    validations:
+      required: true
+  - type: input
+    id: php
+    attributes:
+      label: PHP version
+      placeholder: e.g. 8.3
+  - type: input
+    id: database
+    attributes:
+      label: Database
+      placeholder: e.g. PostgreSQL 17 / MySQL 8.4 / MariaDB 11
+  - type: input
+    id: activity
+    attributes:
+      label: Activity/resource type
+      placeholder: e.g. Quiz, Assignment, Forum, SCORM
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide the smallest reproducible sequence.
+      placeholder: |
+        1. Open...
+        2. Select...
+        3. Apply...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: debugging
+    attributes:
+      label: Debugging output
+      description: Paste relevant Moodle debugging output or stack trace. Remove credentials and personal data.
+      render: shell
