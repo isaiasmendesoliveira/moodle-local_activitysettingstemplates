@@ -1,12 +1,11 @@
+# Activity Settings Templates
 <p align="center">
   <img src="docs/images/activity-settings-templates-logo.png" alt="Activity Settings Templates logo" width="280">
 </p>
 
-# Activity Settings Templates
-
 **Activity Settings Templates** (`local_activitysettingstemplates`) is a teacher-centered local plugin for Moodle LMS that allows teachers to save selected activity settings as reusable personal templates and apply them later to activities of the same type.
 
-The plugin is designed to reduce repetitive configuration work, configuration errors, and cognitive load while keeping Moodle's native activity forms, validation, permissions, and save workflow in control.
+The plugin reduces repetitive configuration work, configuration errors, and cognitive load while keeping Moodle's native activity forms, validation, permissions, and save workflow in control.
 
 > Public release: **1.0.0**  
 > Moodle: **4.5–5.2**  
@@ -17,11 +16,11 @@ Technical documentation: [Architecture and implementation](docs/TECHNICAL.md)
 
 ## Why this plugin?
 
-Teachers often configure similar activities repeatedly: quiz attempt rules, forum behaviour, completion conditions, group mode, SCORM options, assignment settings, and many other parameters.
+Teachers often configure similar activities repeatedly: quiz attempt rules, forum behavior, completion conditions, group mode, SCORM options, assignment settings, and many other parameters.
 
 Moodle provides powerful activity configuration, but repeating the same decisions across many activities or courses can require significant navigation, recall, checking, and manual work.
 
-Activity Settings Templates lets the teacher configure once and reuse those settings later. A template stores **configuration choices**, not activity content.
+Activity Settings Templates let teachers configure settings once and reuse them later. A template stores **configuration choices**, not activity content.
 
 ## Main features
 
@@ -30,8 +29,8 @@ Activity Settings Templates lets the teacher configure once and reuse those sett
 - Apply templates from the native Moodle activity settings form.
 - Show only templates compatible with the current activity type.
 - Preview the stored settings before applying them.
-- Analyse compatibility with the current form before any setting is changed.
-- Clearly distinguish applicable, form-dependent, and unavailable settings using colour, icon, and explanatory text.
+- Analyze compatibility with the current form before any setting is changed.
+- Clearly distinguish applicable, form-dependent, and unavailable settings using color, icon, and explanatory text.
 - Apply compatible settings while safely skipping unavailable or locked controls.
 - Retry dependent controls once after Moodle form dependencies react.
 - Edit template name, description, included settings, and stored values.
@@ -85,13 +84,13 @@ Curated support includes the main reusable settings of:
 - Wiki
 - Workshop
 
-For modules whose specific configuration mainly contains content, credentials, or complex relations, the plugin deliberately remains conservative and exposes only safe common settings when appropriate.
+For modules whose specific configuration mainly includes content, credentials, or complex relations, the plugin remains deliberately conservative and exposes only safe, common settings when appropriate.
 
 Third-party activity modules can also be detected through a conservative fallback. Unknown raw database fields are not presented unless they can be represented safely and meaningfully.
 
 ## Safety principles
 
-Activity Settings Templates intentionally avoids copying or forcing:
+Activity Settings Templates intentionally avoid copying or forcing:
 
 - activity content and descriptions;
 - questions and authored activity data;
@@ -104,7 +103,7 @@ Activity Settings Templates intentionally avoids copying or forcing:
 - legacy hidden fields;
 - values that cannot be safely represented in the destination form.
 
-If a stored setting is unavailable, locked, or incompatible with the current form, it is not forced. The compatibility preview identifies this before the teacher applies the template.
+If a stored setting is unavailable, locked, or incompatible with the current form, the plugin does not force it. The compatibility preview identifies this before the teacher applies the template.
 
 ## Compatibility preview
 
@@ -120,7 +119,7 @@ Attention-required settings are shown before compatible settings to reduce scann
 
 Templates are personal to the teacher account that created them. The plugin stores the template owner, template name, description, activity type, selected configuration values, and timestamps in Moodle's database.
 
-The plugin implements the Moodle Privacy API for export and deletion of this personal data. No data is sent to external services.
+The plugin implements the Moodle Privacy API to export and delete this personal data. It does not send data to external services.
 
 ## Installation
 
