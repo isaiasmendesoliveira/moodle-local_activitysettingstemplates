@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Manage personal activity settings templates.
@@ -61,12 +61,16 @@ $presets = $DB->get_records('local_activitysettingstemplates', ['userid' => $USE
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('managepresets', 'local_activitysettingstemplates'));
 
-echo $OUTPUT->notification(get_string('indexintro', 'local_activitysettingstemplates'),
-    \core\output\notification::NOTIFY_INFO);
+echo $OUTPUT->notification(
+    get_string('indexintro', 'local_activitysettingstemplates'),
+    \core\output\notification::NOTIFY_INFO
+);
 
 if (empty($presets)) {
-    echo $OUTPUT->notification(get_string('nopresets', 'local_activitysettingstemplates'),
-        \core\output\notification::NOTIFY_INFO);
+    echo $OUTPUT->notification(
+        get_string('nopresets', 'local_activitysettingstemplates'),
+        \core\output\notification::NOTIFY_INFO
+    );
     echo $OUTPUT->footer();
     exit;
 }

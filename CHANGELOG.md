@@ -5,6 +5,8 @@ All notable public changes to **Activity Settings Templates** are documented in 
 
 ## 1.0.0 - 2026-09-08
 
+- Moodle Plugin CI compliance: coding style, PHPDoc, ESLint and Stylelint fixes.
+
 Initial public release.
 
 ### Added

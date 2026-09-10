@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Create a personal activity settings template from an existing activity.
@@ -116,7 +116,9 @@ if ($data = $form->get_data()) {
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('createpreset', 'local_activitysettingstemplates'));
-echo $OUTPUT->notification(get_string('createsafetyinfo', 'local_activitysettingstemplates'),
-    \core\output\notification::NOTIFY_INFO);
+echo $OUTPUT->notification(
+    get_string('createsafetyinfo', 'local_activitysettingstemplates'),
+    \core\output\notification::NOTIFY_INFO
+);
 $form->display();
 echo $OUTPUT->footer();

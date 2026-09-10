@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Library callbacks for Activity Settings Templates.
@@ -21,7 +21,6 @@
  * @copyright 2026 Isaias Mendes de Oliveira <isaiasmendes@gmail.com>
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 use local_activitysettingstemplates\local\field_registry;
 
@@ -37,8 +36,10 @@ function local_activitysettingstemplates_extend_navigation_course(
     stdClass $course,
     context_course $context
 ): void {
-    if (!has_capability('local/activitysettingstemplates:manage', $context)
-            || !has_capability('moodle/course:manageactivities', $context)) {
+    if (
+        !has_capability('local/activitysettingstemplates:manage', $context)
+        || !has_capability('moodle/course:manageactivities', $context)
+    ) {
         return;
     }
 
@@ -73,8 +74,10 @@ function local_activitysettingstemplates_coursemodule_standard_elements(
     }
 
     $context = context_course::instance($COURSE->id);
-    if (!has_capability('local/activitysettingstemplates:manage', $context)
-            || !has_capability('moodle/course:manageactivities', $context)) {
+    if (
+        !has_capability('local/activitysettingstemplates:manage', $context)
+        || !has_capability('moodle/course:manageactivities', $context)
+    ) {
         return;
     }
 
@@ -84,8 +87,11 @@ function local_activitysettingstemplates_coursemodule_standard_elements(
         'name ASC, id ASC'
     );
 
-    $mform->addElement('header', 'local_activitysettingstemplates_header',
-        get_string('formsectiontitle', 'local_activitysettingstemplates'));
+    $mform->addElement(
+        'header',
+        'local_activitysettingstemplates_header',
+        get_string('formsectiontitle', 'local_activitysettingstemplates')
+    );
 
     $manageurl = new moodle_url('/local/activitysettingstemplates/index.php', ['courseid' => $COURSE->id]);
     $cmid = !empty($current->coursemodule) ? (int)$current->coursemodule : 0;
@@ -109,8 +115,10 @@ function local_activitysettingstemplates_coursemodule_standard_elements(
     if ($cmid > 0) {
         $createurl = new moodle_url('/local/activitysettingstemplates/create.php', ['cmid' => $cmid]);
         $panelhtml .= html_writer::start_div('col-12 col-lg-6 d-flex justify-content-center');
-        $panelhtml .= html_writer::tag('button',
-            get_string('createfromactivity', 'local_activitysettingstemplates'), [
+        $panelhtml .= html_writer::tag(
+            'button',
+            get_string('createfromactivity', 'local_activitysettingstemplates'),
+            [
                 'type' => 'button',
                 'class' => 'btn btn-outline-secondary w-100 local-ast-nav-button',
                 'data-url' => $createurl->out(false),
@@ -119,8 +127,10 @@ function local_activitysettingstemplates_coursemodule_standard_elements(
         $panelhtml .= html_writer::end_div();
     }
     $panelhtml .= html_writer::start_div('col-12 col-lg-6 d-flex justify-content-center');
-    $panelhtml .= html_writer::tag('button',
-        get_string('managepresets', 'local_activitysettingstemplates'), [
+    $panelhtml .= html_writer::tag(
+        'button',
+        get_string('managepresets', 'local_activitysettingstemplates'),
+        [
             'type' => 'button',
             'class' => 'btn btn-outline-secondary w-100 local-ast-nav-button',
             'data-url' => $manageurl->out(false),
@@ -188,14 +198,17 @@ function local_activitysettingstemplates_coursemodule_standard_elements(
     $panelhtml .= html_writer::end_div();
 
     $panelhtml .= html_writer::start_div('col-12 col-lg-6 d-flex justify-content-center');
-    $panelhtml .= html_writer::tag('button',
-        get_string('applypreset', 'local_activitysettingstemplates'), [
-        'type' => 'button',
-        'id' => 'id_local_activitysettingstemplates_apply',
-        'class' => 'btn btn-secondary w-100',
-        'disabled' => 'disabled',
-        'aria-controls' => 'local-activitysettingstemplates-preview local-activitysettingstemplates-status',
-    ]);
+    $panelhtml .= html_writer::tag(
+        'button',
+        get_string('applypreset', 'local_activitysettingstemplates'),
+        [
+            'type' => 'button',
+            'id' => 'id_local_activitysettingstemplates_apply',
+            'class' => 'btn btn-secondary w-100',
+            'disabled' => 'disabled',
+            'aria-controls' => 'local-activitysettingstemplates-preview local-activitysettingstemplates-status',
+        ]
+    );
     $panelhtml .= html_writer::end_div();
 
     // Immediate application feedback: shown in the teacher's current visual context,

@@ -12,7 +12,7 @@
 }
 
 #fitem_id_local_activitysettingstemplates_panel > .col-form-label {
-    display: none !important;
+    display: none;
 }
 
 #fitem_id_local_activitysettingstemplates_panel > .felement,
@@ -20,7 +20,7 @@
     flex: 0 0 100%;
     width: 100%;
     max-width: 100%;
-    margin-left: 0 !important;
+    margin-left: 0;
 }
 
 .local-ast-form-panel {
