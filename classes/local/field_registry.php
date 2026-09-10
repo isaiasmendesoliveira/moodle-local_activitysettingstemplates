@@ -184,7 +184,7 @@ class field_registry {
 
         if ($moduletype === 'quiz') {
             $sections = self::filter_missing_instance_fields('quiz', self::get_quiz_definitions());
-        } elseif (in_array($moduletype, self::CURATED_CORE_MODULES, true)) {
+        } else if (in_array($moduletype, self::CURATED_CORE_MODULES, true)) {
             $sections = self::filter_missing_instance_fields(
                 $moduletype,
                 self::get_core_curated_definitions($moduletype)
