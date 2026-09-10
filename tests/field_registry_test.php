@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Tests for the activity settings field registry.
@@ -33,9 +33,9 @@ use local_activitysettingstemplates\local\field_registry;
  * @package   local_activitysettingstemplates
  * @copyright 2026 Isaias Mendes de Oliveira <isaiasmendes@gmail.com>
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \local_activitysettingstemplates\local\field_registry
  */
 final class field_registry_test extends advanced_testcase {
-
     public function test_core_activity_modules_are_supported(): void {
         $this->assertTrue(field_registry::is_supported('quiz'));
         $this->assertTrue(field_registry::is_supported('assign'));
@@ -119,7 +119,17 @@ final class field_registry_test extends advanced_testcase {
     public function test_lesson_registry_excludes_legacy_and_relational_fields(): void {
         $definitions = field_registry::get_flat_definitions('lesson');
         $formfields = array_column($definitions, 'formfield');
-        foreach (['width', 'height', 'bgcolor', 'mediawidth', 'mediaheight', 'mediaclose', 'activitylink', 'password'] as $field) {
+        $excludedfields = [
+            'width',
+            'height',
+            'bgcolor',
+            'mediawidth',
+            'mediaheight',
+            'mediaclose',
+            'activitylink',
+            'password',
+        ];
+        foreach ($excludedfields as $field) {
             $this->assertNotContains($field, $formfields);
         }
     }
@@ -146,6 +156,4 @@ final class field_registry_test extends advanced_testcase {
         $this->assertArrayNotHasKey('scale', $config);
         $this->assertArrayNotHasKey('unknowninternalfield', $config);
     }
-
-
 }

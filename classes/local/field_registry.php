@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Registry and formatting helpers for reusable activity settings.
@@ -32,7 +32,7 @@ namespace local_activitysettingstemplates\local;
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class field_registry {
-
+    /** Quiz review period bitmasks. */
     private const REVIEW_PERIODS = [
         'during' => 0x10000,
         'immediately' => 0x01000,
@@ -40,6 +40,7 @@ class field_registry {
         'closed' => 0x00010,
     ];
 
+    /** Mapping of teacher-facing review settings to Quiz storage fields. */
     private const REVIEW_FIELDS = [
         'attempt' => 'reviewattempt',
         'correctness' => 'reviewcorrectness',
@@ -51,6 +52,7 @@ class field_registry {
         'overallfeedback' => 'reviewoverallfeedback',
     ];
 
+    /** Instance fields that must never be exposed through automatic discovery. */
     private const EXCLUDED_INSTANCE_FIELDS = [
         'id', 'course', 'name', 'intro', 'introformat', 'timecreated', 'timemodified',
         'revision', 'idnumber', 'grade', 'gradepass', 'gradecat', 'gradecategory', 'groupingid', 'templateid',
@@ -60,12 +62,12 @@ class field_registry {
         'sumgrades',
     ];
 
+    /** Field-name patterns used to exclude dates and time boundaries from discovery. */
     private const EXCLUDED_DATE_PATTERNS = [
         '/^time/i', '/date$/i', '/deadline/i', '/duedate/i', '/cutoff/i',
         '/availablefrom/i', '/availableuntil/i', '/open$/i', '/close$/i',
         '/start$/i', '/end$/i', '/starttime/i', '/endtime/i',
     ];
-
 
     /**
      * Core activity/resource modules for which this plugin provides an explicit,
@@ -79,14 +81,31 @@ class field_registry {
         'lti', 'page', 'quiz', 'resource', 'scorm', 'survey', 'url', 'wiki', 'workshop',
     ];
 
+    /**
+     * Get installed activity and resource module names.
+     *
+     * @return string[] Installed module names.
+     */
     public static function get_supported_modules(): array {
         return array_keys(\core_component::get_plugin_list('mod'));
     }
 
+    /**
+     * Check whether an activity or resource module is installed.
+     *
+     * @param string $moduletype Module name.
+     * @return bool True when the module is installed.
+     */
     public static function is_supported(string $moduletype): bool {
         return $moduletype !== '' && array_key_exists($moduletype, \core_component::get_plugin_list('mod'));
     }
 
+    /**
+     * Get the teacher-facing name of a module.
+     *
+     * @param string $moduletype Module name.
+     * @return string Localised module name.
+     */
     public static function get_module_name(string $moduletype): string {
         $component = 'mod_' . $moduletype;
         $stringman = get_string_manager();
@@ -96,6 +115,12 @@ class field_registry {
         return ucfirst(str_replace('_', ' ', $moduletype));
     }
 
+    /**
+     * Get the teacher-facing label for a setting definition.
+     *
+     * @param array $definition Setting definition.
+     * @return string Localised label.
+     */
     public static function get_definition_label(array $definition): string {
         if (!empty($definition['labeltext'])) {
             return (string)$definition['labeltext'];
@@ -126,6 +151,12 @@ class field_registry {
         return $label;
     }
 
+    /**
+     * Get the teacher-facing label for a settings section.
+     *
+     * @param array $section Section definition.
+     * @return string Localised section label.
+     */
     public static function get_section_label(array $section): string {
         if (!empty($section['labeltext'])) {
             return (string)$section['labeltext'];
@@ -138,6 +169,9 @@ class field_registry {
 
     /**
      * Get definitions grouped by UI section.
+     *
+     * @param string $moduletype Module name.
+     * @return array Grouped setting definitions.
      */
     public static function get_definitions(string $moduletype): array {
         static $cache = [];
@@ -150,9 +184,11 @@ class field_registry {
 
         if ($moduletype === 'quiz') {
             $sections = self::filter_missing_instance_fields('quiz', self::get_quiz_definitions());
-        } else if (in_array($moduletype, self::CURATED_CORE_MODULES, true)) {
-            $sections = self::filter_missing_instance_fields($moduletype,
-                self::get_core_curated_definitions($moduletype));
+        } elseif (in_array($moduletype, self::CURATED_CORE_MODULES, true)) {
+            $sections = self::filter_missing_instance_fields(
+                $moduletype,
+                self::get_core_curated_definitions($moduletype)
+            );
         } else {
             // Third-party modules remain supported, but the fallback is deliberately
             // conservative: only scalar fields with a native label and a clearly
@@ -305,7 +341,10 @@ class field_registry {
         $sections['quizcompletion'] = [
             'label' => 'sectionquizcompletion',
             'fields' => [
-                'completionattemptsexhausted' => self::instance_definition('completionattemptsexhausted', 'fieldcompletionattemptsexhausted'),
+                'completionattemptsexhausted' => self::instance_definition(
+                    'completionattemptsexhausted',
+                    'fieldcompletionattemptsexhausted',
+                ),
                 'completionminattempts' => self::instance_definition('completionminattempts', 'fieldcompletionminattempts'),
             ],
         ];
@@ -325,14 +364,23 @@ class field_registry {
                 return [
                     'assignsubmission' => ['label' => 'sectionassignsubmission', 'fields' => [
                         'submissiondrafts' => self::bool_instance('submissiondrafts', 'fieldsubmissiondrafts'),
-                        'requiresubmissionstatement' => self::bool_instance('requiresubmissionstatement', 'fieldrequiresubmissionstatement'),
+                        'requiresubmissionstatement' => self::bool_instance(
+                            'requiresubmissionstatement',
+                            'fieldrequiresubmissionstatement',
+                        ),
                         'alwaysshowdescription' => self::bool_instance('alwaysshowdescription', 'fieldalwaysshowdescription'),
                         'timelimit' => self::duration_instance('timelimit', 'fieldtimelimit'),
                     ]],
                     'assigngroups' => ['label' => 'sectionassigngroups', 'fields' => [
                         'teamsubmission' => self::bool_instance('teamsubmission', 'fieldteamsubmission'),
-                        'preventsubmissionnotingroup' => self::bool_instance('preventsubmissionnotingroup', 'fieldpreventsubmissionnotingroup'),
-                        'requireallteammemberssubmit' => self::bool_instance('requireallteammemberssubmit', 'fieldrequireallteammemberssubmit'),
+                        'preventsubmissionnotingroup' => self::bool_instance(
+                            'preventsubmissionnotingroup',
+                            'fieldpreventsubmissionnotingroup',
+                        ),
+                        'requireallteammemberssubmit' => self::bool_instance(
+                            'requireallteammemberssubmit',
+                            'fieldrequireallteammemberssubmit',
+                        ),
                     ]],
                     'assignattempts' => ['label' => 'sectionassignattempts', 'fields' => [
                         'attemptreopenmethod' => self::select_instance('attemptreopenmethod', 'fieldattemptreopenmethod', [
@@ -353,25 +401,57 @@ class field_registry {
                     'assignnotifications' => ['label' => 'sectionassignnotifications', 'fields' => [
                         'sendnotifications' => self::bool_instance('sendnotifications', 'fieldsendnotifications'),
                         'sendlatenotifications' => self::bool_instance('sendlatenotifications', 'fieldsendlatenotifications'),
-                        'sendstudentnotifications' => self::bool_instance('sendstudentnotifications', 'fieldsendstudentnotifications'),
+                        'sendstudentnotifications' => self::bool_instance(
+                            'sendstudentnotifications',
+                            'fieldsendstudentnotifications',
+                        ),
                     ]],
                 ];
 
             case 'forum':
                 return [
                     'forumgeneral' => ['label' => 'sectionforumgeneral', 'fields' => [
-                        'type' => self::select_instance('type', 'fieldforumtype', self::forum_type_options(), 'general', PARAM_ALPHANUMEXT),
+                        'type' => self::select_instance(
+                            'type',
+                            'fieldforumtype',
+                            self::forum_type_options(),
+                            'general',
+                            PARAM_ALPHANUMEXT,
+                        ),
                         'showimmediately' => self::bool_instance('showimmediately', 'fieldshowimmediately'),
                     ]],
                     'forumattachments' => ['label' => 'sectionforumattachments', 'fields' => [
                         'maxattachments' => self::select_instance('maxattachments', 'fieldmaxattachments', [
-                            0 => '0', 1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5', 6 => '6', 7 => '7', 8 => '8', 9 => '9', 10 => '10', 20 => '20', 50 => '50', 100 => '100',
+                            0 => '0',
+                            1 => '1',
+                            2 => '2',
+                            3 => '3',
+                            4 => '4',
+                            5 => '5',
+                            6 => '6',
+                            7 => '7',
+                            8 => '8',
+                            9 => '9',
+                            10 => '10',
+                            20 => '20',
+                            50 => '50',
+                            100 => '100',
                         ], 1),
                         'displaywordcount' => self::bool_instance('displaywordcount', 'fielddisplaywordcount'),
                     ]],
                     'forumsubscription' => ['label' => 'sectionforumsubscription', 'fields' => [
-                        'forcesubscribe' => self::select_instance('forcesubscribe', 'fieldforcesubscribe', self::forum_subscription_options(), 0),
-                        'trackingtype' => self::select_instance('trackingtype', 'fieldtrackingtype', self::forum_tracking_options(), 1),
+                        'forcesubscribe' => self::select_instance(
+                            'forcesubscribe',
+                            'fieldforcesubscribe',
+                            self::forum_subscription_options(),
+                            0,
+                        ),
+                        'trackingtype' => self::select_instance(
+                            'trackingtype',
+                            'fieldtrackingtype',
+                            self::forum_tracking_options(),
+                            1,
+                        ),
                     ]],
                     'forumrss' => ['label' => 'sectionforumrss', 'fields' => [
                         'rsstype' => self::select_instance('rsstype', 'fieldrsstype', [
@@ -517,8 +597,18 @@ class field_registry {
                 return [
                     'h5pattempts' => ['label' => 'sectionh5pattempts', 'fields' => [
                         'enabletracking' => self::bool_instance('enabletracking', 'fieldenabletracking'),
-                        'grademethod' => self::select_instance('grademethod', 'fieldh5pgrademethod', self::h5p_grademethod_options(), 1),
-                        'reviewmode' => self::select_instance('reviewmode', 'fieldh5previewmode', self::h5p_reviewmode_options(), 1),
+                        'grademethod' => self::select_instance(
+                            'grademethod',
+                            'fieldh5pgrademethod',
+                            self::h5p_grademethod_options(),
+                            1,
+                        ),
+                        'reviewmode' => self::select_instance(
+                            'reviewmode',
+                            'fieldh5previewmode',
+                            self::h5p_reviewmode_options(),
+                            1,
+                        ),
                     ]],
                 ];
 
@@ -538,7 +628,12 @@ class field_registry {
                         'progressbar' => self::bool_instance('progressbar', 'fieldprogressbar'),
                         'ongoing' => self::bool_instance('ongoing', 'fieldongoing'),
                         'displayleft' => self::bool_instance('displayleft', 'fielddisplayleft'),
-                        'displayleftif' => self::select_instance('displayleftif', 'fielddisplayleftif', self::percentage_options(), 0),
+                        'displayleftif' => self::select_instance(
+                            'displayleftif',
+                            'fielddisplayleftif',
+                            self::percentage_options(),
+                            0,
+                        ),
                         'slideshow' => self::bool_instance('slideshow', 'fieldslideshow'),
                         'maxanswers' => self::select_instance('maxanswers', 'fieldmaxanswers', self::number_options(2, 20), 4),
                         'feedback' => self::bool_instance('feedback', 'fieldlessonfeedback'),
@@ -546,8 +641,22 @@ class field_registry {
                     'lessonflow' => ['label' => 'sectionlessonflow', 'fields' => [
                         'modattempts' => self::bool_instance('modattempts', 'fieldmodattempts'),
                         'review' => self::bool_instance('review', 'fieldlessonreview'),
-                        'maxattempts' => self::select_instance('maxattempts', 'fieldlessonmaxattempts', self::number_options(1, 10, [0 => get_string('valueunlimited', 'local_activitysettingstemplates')]), 0),
-                        'nextpagedefault' => self::select_instance('nextpagedefault', 'fieldnextpagedefault', self::lesson_nextpage_options(), 0),
+                        'maxattempts' => self::select_instance(
+                            'maxattempts',
+                            'fieldlessonmaxattempts',
+                            self::number_options(
+                                1,
+                                10,
+                                [0 => get_string('valueunlimited', 'local_activitysettingstemplates')]
+                            ),
+                            0,
+                        ),
+                        'nextpagedefault' => self::select_instance(
+                            'nextpagedefault',
+                            'fieldnextpagedefault',
+                            self::lesson_nextpage_options(),
+                            0,
+                        ),
                         'maxpages' => self::select_instance('maxpages', 'fieldmaxpages', self::number_options(0, 100), 0),
                     ]],
                     'lessongrade' => ['label' => 'sectionlessongrade', 'fields' => [
@@ -558,7 +667,12 @@ class field_registry {
                             0 => get_string('valueusemean', 'local_activitysettingstemplates'),
                             1 => get_string('valueusemaximum', 'local_activitysettingstemplates'),
                         ], 0),
-                        'minquestions' => self::select_instance('minquestions', 'fieldminquestions', self::number_options(0, 100), 0),
+                        'minquestions' => self::select_instance(
+                            'minquestions',
+                            'fieldminquestions',
+                            self::number_options(0, 100),
+                            0,
+                        ),
                     ]],
                     'lessonlimits' => ['label' => 'sectionlessonlimits', 'fields' => [
                         'timelimit' => self::duration_instance('timelimit', 'fieldtimelimit'),
@@ -569,10 +683,34 @@ class field_registry {
                 return [
                     'pagedisplay' => ['label' => 'sectionpagedisplay', 'fields' => [
                         'display' => self::select_instance('display', 'fielddisplay', self::resource_display_options(), 0),
-                        'printintro' => self::serialized_definition('displayoptions', 'printintro', 'printintro', 'fieldprintintro', self::bool_control()),
-                        'printlastmodified' => self::serialized_definition('displayoptions', 'printlastmodified', 'printlastmodified', 'fieldprintlastmodified', self::bool_control()),
-                        'popupwidth' => self::serialized_definition('displayoptions', 'popupwidth', 'popupwidth', 'fieldpopupwidth', self::number_control(620)),
-                        'popupheight' => self::serialized_definition('displayoptions', 'popupheight', 'popupheight', 'fieldpopupheight', self::number_control(450)),
+                        'printintro' => self::serialized_definition(
+                            'displayoptions',
+                            'printintro',
+                            'printintro',
+                            'fieldprintintro',
+                            self::bool_control(),
+                        ),
+                        'printlastmodified' => self::serialized_definition(
+                            'displayoptions',
+                            'printlastmodified',
+                            'printlastmodified',
+                            'fieldprintlastmodified',
+                            self::bool_control(),
+                        ),
+                        'popupwidth' => self::serialized_definition(
+                            'displayoptions',
+                            'popupwidth',
+                            'popupwidth',
+                            'fieldpopupwidth',
+                            self::number_control(620),
+                        ),
+                        'popupheight' => self::serialized_definition(
+                            'displayoptions',
+                            'popupheight',
+                            'popupheight',
+                            'fieldpopupheight',
+                            self::number_control(450),
+                        ),
                     ]],
                 ];
 
@@ -580,12 +718,48 @@ class field_registry {
                 return [
                     'resourcedisplay' => ['label' => 'sectionresourcedisplay', 'fields' => [
                         'display' => self::select_instance('display', 'fielddisplay', self::resource_display_options(), 0),
-                        'showsize' => self::serialized_definition('displayoptions', 'showsize', 'showsize', 'fieldshowsize', self::bool_control()),
-                        'showtype' => self::serialized_definition('displayoptions', 'showtype', 'showtype', 'fieldshowtype', self::bool_control()),
-                        'showdate' => self::serialized_definition('displayoptions', 'showdate', 'showdate', 'fieldshowdate', self::bool_control()),
-                        'printintro' => self::serialized_definition('displayoptions', 'printintro', 'printintro', 'fieldprintintro', self::bool_control()),
-                        'popupwidth' => self::serialized_definition('displayoptions', 'popupwidth', 'popupwidth', 'fieldpopupwidth', self::number_control(620)),
-                        'popupheight' => self::serialized_definition('displayoptions', 'popupheight', 'popupheight', 'fieldpopupheight', self::number_control(450)),
+                        'showsize' => self::serialized_definition(
+                            'displayoptions',
+                            'showsize',
+                            'showsize',
+                            'fieldshowsize',
+                            self::bool_control(),
+                        ),
+                        'showtype' => self::serialized_definition(
+                            'displayoptions',
+                            'showtype',
+                            'showtype',
+                            'fieldshowtype',
+                            self::bool_control(),
+                        ),
+                        'showdate' => self::serialized_definition(
+                            'displayoptions',
+                            'showdate',
+                            'showdate',
+                            'fieldshowdate',
+                            self::bool_control(),
+                        ),
+                        'printintro' => self::serialized_definition(
+                            'displayoptions',
+                            'printintro',
+                            'printintro',
+                            'fieldprintintro',
+                            self::bool_control(),
+                        ),
+                        'popupwidth' => self::serialized_definition(
+                            'displayoptions',
+                            'popupwidth',
+                            'popupwidth',
+                            'fieldpopupwidth',
+                            self::number_control(620),
+                        ),
+                        'popupheight' => self::serialized_definition(
+                            'displayoptions',
+                            'popupheight',
+                            'popupheight',
+                            'fieldpopupheight',
+                            self::number_control(450),
+                        ),
                         'filterfiles' => self::select_instance('filterfiles', 'fieldfilterfiles', [
                             0 => get_string('valuefilternone', 'local_activitysettingstemplates'),
                             1 => get_string('valuefilterhtml', 'local_activitysettingstemplates'),
@@ -598,9 +772,27 @@ class field_registry {
                 return [
                     'urldisplay' => ['label' => 'sectionurldisplay', 'fields' => [
                         'display' => self::select_instance('display', 'fielddisplay', self::resource_display_options(), 0),
-                        'printintro' => self::serialized_definition('displayoptions', 'printintro', 'printintro', 'fieldprintintro', self::bool_control()),
-                        'popupwidth' => self::serialized_definition('displayoptions', 'popupwidth', 'popupwidth', 'fieldpopupwidth', self::number_control(620)),
-                        'popupheight' => self::serialized_definition('displayoptions', 'popupheight', 'popupheight', 'fieldpopupheight', self::number_control(450)),
+                        'printintro' => self::serialized_definition(
+                            'displayoptions',
+                            'printintro',
+                            'printintro',
+                            'fieldprintintro',
+                            self::bool_control(),
+                        ),
+                        'popupwidth' => self::serialized_definition(
+                            'displayoptions',
+                            'popupwidth',
+                            'popupwidth',
+                            'fieldpopupwidth',
+                            self::number_control(620),
+                        ),
+                        'popupheight' => self::serialized_definition(
+                            'displayoptions',
+                            'popupheight',
+                            'popupheight',
+                            'fieldpopupheight',
+                            self::number_control(450),
+                        ),
                     ]],
                 ];
 
@@ -611,7 +803,13 @@ class field_registry {
                             'collaborative' => get_string('valuewikicollaborative', 'local_activitysettingstemplates'),
                             'individual' => get_string('valuewikiindividual', 'local_activitysettingstemplates'),
                         ], 'collaborative', PARAM_ALPHA),
-                        'defaultformat' => self::select_instance('defaultformat', 'fielddefaultformat', self::wiki_format_options(), 'html', PARAM_ALPHANUMEXT),
+                        'defaultformat' => self::select_instance(
+                            'defaultformat',
+                            'fielddefaultformat',
+                            self::wiki_format_options(),
+                            'html',
+                            PARAM_ALPHANUMEXT,
+                        ),
                         'forceformat' => self::bool_instance('forceformat', 'fieldforceformat'),
                     ]],
                 ];
@@ -619,14 +817,37 @@ class field_registry {
             case 'workshop':
                 return [
                     'workshopgrading' => ['label' => 'sectionworkshopgrading', 'fields' => [
-                        'strategy' => self::select_instance('strategy', 'fieldworkshopstrategy', self::workshop_strategy_options(), 'accumulative', PARAM_ALPHANUMEXT),
-                        'gradedecimals' => self::select_instance('gradedecimals', 'fieldgradedecimals', self::number_options(0, 5), 2),
+                        'strategy' => self::select_instance(
+                            'strategy',
+                            'fieldworkshopstrategy',
+                            self::workshop_strategy_options(),
+                            'accumulative',
+                            PARAM_ALPHANUMEXT,
+                        ),
+                        'gradedecimals' => self::select_instance(
+                            'gradedecimals',
+                            'fieldgradedecimals',
+                            self::number_options(0, 5),
+                            2,
+                        ),
                     ]],
                     'workshopsubmission' => ['label' => 'sectionworkshopsubmission', 'fields' => [
-                        'submissiontypetextavailable' => self::bool_instance('submissiontypetextavailable', 'fieldsubmissiontextavailable'),
-                        'submissiontypetextrequired' => self::bool_instance('submissiontypetextrequired', 'fieldsubmissiontextrequired'),
-                        'submissiontypefileavailable' => self::bool_instance('submissiontypefileavailable', 'fieldsubmissionfileavailable'),
-                        'submissiontypefilerequired' => self::bool_instance('submissiontypefilerequired', 'fieldsubmissionfilerequired'),
+                        'submissiontypetextavailable' => self::bool_instance(
+                            'submissiontypetextavailable',
+                            'fieldsubmissiontextavailable',
+                        ),
+                        'submissiontypetextrequired' => self::bool_instance(
+                            'submissiontypetextrequired',
+                            'fieldsubmissiontextrequired',
+                        ),
+                        'submissiontypefileavailable' => self::bool_instance(
+                            'submissiontypefileavailable',
+                            'fieldsubmissionfileavailable',
+                        ),
+                        'submissiontypefilerequired' => self::bool_instance(
+                            'submissiontypefilerequired',
+                            'fieldsubmissionfilerequired',
+                        ),
                         'nattachments' => self::select_instance('nattachments', 'fieldnattachments', self::number_options(0, 7), 1),
                         'latesubmissions' => self::bool_instance('latesubmissions', 'fieldlatesubmissions'),
                     ]],
@@ -639,52 +860,130 @@ class field_registry {
                             1 => get_string('valuefeedbackoptional', 'local_activitysettingstemplates'),
                             2 => get_string('valuefeedbackrequired', 'local_activitysettingstemplates'),
                         ], 1),
-                        'overallfeedbackfiles' => self::select_instance('overallfeedbackfiles', 'fieldoverallfeedbackfiles', self::number_options(0, 7), 0),
+                        'overallfeedbackfiles' => self::select_instance(
+                            'overallfeedbackfiles',
+                            'fieldoverallfeedbackfiles',
+                            self::number_options(0, 7),
+                            0,
+                        ),
                     ]],
                     'workshopexamples' => ['label' => 'sectionworkshopexamples', 'fields' => [
                         'useexamples' => self::bool_instance('useexamples', 'fielduseexamples'),
-                        'examplesmode' => self::select_instance('examplesmode', 'fieldexamplesmode', self::workshop_example_options(), 0),
+                        'examplesmode' => self::select_instance(
+                            'examplesmode',
+                            'fieldexamplesmode',
+                            self::workshop_example_options(),
+                            0,
+                        ),
                     ]],
                 ];
 
             case 'scorm':
                 return [
                     'scormpackage' => ['label' => 'sectionscormpackage', 'fields' => [
-                        'updatefreq' => self::select_instance('updatefreq', 'fieldupdatefreq', self::scorm_options('scorm_get_updatefreq_array', [
-                            0 => get_string('valuenever', 'local_activitysettingstemplates'),
-                            1 => get_string('valueeveryday', 'local_activitysettingstemplates'),
-                            2 => get_string('valueeverytimeused', 'local_activitysettingstemplates'),
-                        ]), 0),
+                        'updatefreq' => self::select_instance(
+                            'updatefreq',
+                            'fieldupdatefreq',
+                            self::scorm_options(
+                                'scorm_get_updatefreq_array',
+                                [
+                                    0 => get_string('valuenever', 'local_activitysettingstemplates'),
+                                    1 => get_string('valueeveryday', 'local_activitysettingstemplates'),
+                                    2 => get_string('valueeverytimeused', 'local_activitysettingstemplates'),
+                                ]
+                            ),
+                            0,
+                        ),
                     ]],
                     'scormappearance' => ['label' => 'sectionscormappearance', 'fields' => [
-                        'popup' => self::select_instance('popup', 'fieldscormpopup', self::scorm_options('scorm_get_popup_display_array', [0 => get_string('no'), 1 => get_string('yes')]), 0),
-                        'skipview' => self::select_instance('skipview', 'fieldskipview', self::scorm_options('scorm_get_skip_view_array', [
-                            0 => get_string('valuenever', 'local_activitysettingstemplates'),
-                            1 => get_string('valuefirstaccess', 'local_activitysettingstemplates'),
-                            2 => get_string('valuealways', 'local_activitysettingstemplates'),
-                        ]), 0),
+                        'popup' => self::select_instance(
+                            'popup',
+                            'fieldscormpopup',
+                            self::scorm_options(
+                                'scorm_get_popup_display_array',
+                                [0 => get_string('no'), 1 => get_string('yes')]
+                            ),
+                            0,
+                        ),
+                        'skipview' => self::select_instance(
+                            'skipview',
+                            'fieldskipview',
+                            self::scorm_options(
+                                'scorm_get_skip_view_array',
+                                [
+                                    0 => get_string('valuenever', 'local_activitysettingstemplates'),
+                                    1 => get_string('valuefirstaccess', 'local_activitysettingstemplates'),
+                                    2 => get_string('valuealways', 'local_activitysettingstemplates'),
+                                ]
+                            ),
+                            0,
+                        ),
                         'hidebrowse' => self::bool_instance('hidebrowse', 'fieldhidebrowse'),
-                        'displaycoursestructure' => self::bool_instance('displaycoursestructure', 'fielddisplaycoursestructure'),
-                        'hidetoc' => self::select_instance('hidetoc', 'fieldhidetoc', self::scorm_options('scorm_get_hidetoc_array', [
-                            0 => get_string('valuetocside', 'local_activitysettingstemplates'),
-                            1 => get_string('valuetocdrop', 'local_activitysettingstemplates'),
-                            2 => get_string('valuetocentry', 'local_activitysettingstemplates'),
-                            3 => get_string('valuetocdisabled', 'local_activitysettingstemplates'),
-                        ]), 0),
-                        'displayattemptstatus' => self::select_instance('displayattemptstatus', 'fielddisplayattemptstatus', self::scorm_options('scorm_get_attemptstatus_array', [0 => get_string('no'), 1 => get_string('yes')]), 0),
+                        'displaycoursestructure' => self::bool_instance(
+                            'displaycoursestructure',
+                            'fielddisplaycoursestructure',
+                        ),
+                        'hidetoc' => self::select_instance(
+                            'hidetoc',
+                            'fieldhidetoc',
+                            self::scorm_options(
+                                'scorm_get_hidetoc_array',
+                                [
+                                    0 => get_string('valuetocside', 'local_activitysettingstemplates'),
+                                    1 => get_string('valuetocdrop', 'local_activitysettingstemplates'),
+                                    2 => get_string('valuetocentry', 'local_activitysettingstemplates'),
+                                    3 => get_string('valuetocdisabled', 'local_activitysettingstemplates'),
+                                ]
+                            ),
+                            0,
+                        ),
+                        'displayattemptstatus' => self::select_instance(
+                            'displayattemptstatus',
+                            'fielddisplayattemptstatus',
+                            self::scorm_options(
+                                'scorm_get_attemptstatus_array',
+                                [0 => get_string('no'), 1 => get_string('yes')]
+                            ),
+                            0,
+                        ),
                     ]],
                     'scormgrading' => ['label' => 'sectionscormgrading', 'fields' => [
-                        'grademethod' => self::select_instance('grademethod', 'fieldscormgrademethod', self::scorm_options('scorm_get_grade_method_array', self::scorm_grademethod_options()), 0),
+                        'grademethod' => self::select_instance(
+                            'grademethod',
+                            'fieldscormgrademethod',
+                            self::scorm_options('scorm_get_grade_method_array', self::scorm_grademethod_options()),
+                            0,
+                        ),
                         'maxgrade' => self::number_instance('maxgrade', 'fieldmaxgrade', 100),
                     ]],
                     'scormattempts' => ['label' => 'sectionscormattempts', 'fields' => [
-                        'maxattempt' => self::select_instance('maxattempt', 'fieldmaxattempt', self::scorm_options('scorm_get_attempts_array', self::number_options(1, 6, [0 => get_string('valueunlimited', 'local_activitysettingstemplates')])), 1),
-                        'whatgrade' => self::select_instance('whatgrade', 'fieldwhatgrade', self::scorm_options('scorm_get_what_grade_array', [
-                            0 => get_string('valuehighestattempt', 'local_activitysettingstemplates'),
-                            1 => get_string('valueaverageattempt', 'local_activitysettingstemplates'),
-                            2 => get_string('valuefirstattempt', 'local_activitysettingstemplates'),
-                            3 => get_string('valuelastattempt', 'local_activitysettingstemplates'),
-                        ]), 0),
+                        'maxattempt' => self::select_instance(
+                            'maxattempt',
+                            'fieldmaxattempt',
+                            self::scorm_options(
+                                'scorm_get_attempts_array',
+                                self::number_options(
+                                    1,
+                                    6,
+                                    [0 => get_string('valueunlimited', 'local_activitysettingstemplates')]
+                                )
+                            ),
+                            1,
+                        ),
+                        'whatgrade' => self::select_instance(
+                            'whatgrade',
+                            'fieldwhatgrade',
+                            self::scorm_options(
+                                'scorm_get_what_grade_array',
+                                [
+                                    0 => get_string('valuehighestattempt', 'local_activitysettingstemplates'),
+                                    1 => get_string('valueaverageattempt', 'local_activitysettingstemplates'),
+                                    2 => get_string('valuefirstattempt', 'local_activitysettingstemplates'),
+                                    3 => get_string('valuelastattempt', 'local_activitysettingstemplates'),
+                                ]
+                            ),
+                            0,
+                        ),
                         'forcenewattempt' => self::bool_instance('forcenewattempt', 'fieldforcenewattempt'),
                         'lastattemptlock' => self::bool_instance('lastattemptlock', 'fieldlastattemptlock'),
                     ]],
@@ -711,7 +1010,10 @@ class field_registry {
     }
 
     /**
-     * Common course-module settings that are safe to reuse.
+     * Get common course-module settings that are safe to reuse.
+     *
+     * @param string $moduletype Module name.
+     * @return array Common setting definitions.
      */
     private static function get_common_definitions(string $moduletype): array {
         $fields = [];
@@ -725,7 +1027,8 @@ class field_registry {
                 $tracksviews = (bool)plugin_supports('mod', $moduletype, FEATURE_COMPLETION_TRACKS_VIEWS, false);
             }
         } catch (\Throwable $e) {
-            // Keep conservative defaults; the native form will still reject absent fields.
+            $supportsgroups = true;
+            $tracksviews = true;
         }
         if ($supportsgroups) {
             $fields['groupmode'] = [
@@ -754,54 +1057,142 @@ class field_registry {
         return $fields;
     }
 
+    /**
+     * Build metadata for a boolean editor control.
+     *
+     * @param int $default Default value.
+     * @return array Control metadata.
+     */
     private static function bool_control(int $default = 0): array {
         return ['type' => 'select', 'options' => [0 => get_string('no'), 1 => get_string('yes')],
             'param' => PARAM_INT, 'default' => $default];
     }
 
+    /**
+     * Build metadata for a numeric editor control.
+     *
+     * @param mixed $default Default value.
+     * @param string $param Moodle PARAM_* type identifier.
+     * @return array Control metadata.
+     */
     private static function number_control($default = 0, $param = PARAM_INT): array {
         return ['type' => 'number', 'param' => $param, 'default' => $default];
     }
 
+    /**
+     * Build metadata for a duration editor control.
+     *
+     * @param int $default Default value in seconds.
+     * @return array Control metadata.
+     */
     private static function duration_control(int $default = 0): array {
         return ['type' => 'duration', 'param' => PARAM_INT, 'default' => $default];
     }
 
+    /**
+     * Build metadata for a text editor control.
+     *
+     * @param string $default Default value.
+     * @return array Control metadata.
+     */
     private static function text_control(string $default = ''): array {
         return ['type' => 'text', 'param' => PARAM_TEXT, 'default' => $default];
     }
 
+    /**
+     * Build metadata for a select editor control.
+     *
+     * @param array $options Select options.
+     * @param mixed $default Default value.
+     * @param string $param Moodle PARAM_* type identifier.
+     * @return array Control metadata.
+     */
     private static function select_control(array $options, $default = 0, $param = PARAM_INT): array {
         return ['type' => 'select', 'options' => $options, 'param' => $param, 'default' => $default];
     }
 
+    /**
+     * Build an instance-backed boolean setting definition.
+     *
+     * @param string $field Instance field name.
+     * @param string $label Language string identifier.
+     * @param int $default Default value.
+     * @return array Setting definition.
+     */
     private static function bool_instance(string $field, string $label, int $default = 0): array {
         $definition = self::instance_definition($field, $label);
         $definition['control'] = self::bool_control($default);
         return $definition;
     }
 
+    /**
+     * Build an instance-backed numeric setting definition.
+     *
+     * @param string $field Instance field name.
+     * @param string $label Language string identifier.
+     * @param mixed $default Default value.
+     * @param string $param Moodle PARAM_* type identifier.
+     * @return array Setting definition.
+     */
     private static function number_instance(string $field, string $label, $default = 0, $param = PARAM_INT): array {
         $definition = self::instance_definition($field, $label);
         $definition['control'] = self::number_control($default, $param);
         return $definition;
     }
 
+    /**
+     * Build an instance-backed duration setting definition.
+     *
+     * @param string $field Instance field name.
+     * @param string $label Language string identifier.
+     * @param int $default Default value in seconds.
+     * @return array Setting definition.
+     */
     private static function duration_instance(string $field, string $label, int $default = 0): array {
         $definition = self::instance_definition($field, $label);
         $definition['control'] = self::duration_control($default);
         return $definition;
     }
 
-    private static function select_instance(string $field, string $label, array $options, $default = 0,
-            $param = PARAM_INT): array {
+    /**
+     * Build an instance-backed select setting definition.
+     *
+     * @param string $field Instance field name.
+     * @param string $label Language string identifier.
+     * @param array $options Select options.
+     * @param mixed $default Default value.
+     * @param string $param Moodle PARAM_* type identifier.
+     * @return array Setting definition.
+     */
+    private static function select_instance(
+        string $field,
+        string $label,
+        array $options,
+        $default = 0,
+        $param = PARAM_INT
+    ): array {
         $definition = self::instance_definition($field, $label);
         $definition['control'] = self::select_control($options, $default, $param);
         return $definition;
     }
 
-    private static function serialized_definition(string $storagefield, string $key, string $formfield,
-            string $label, array $control): array {
+    /**
+     * Build a setting definition stored inside a serialized instance field.
+     *
+     * @param string $storagefield Serialized database field name.
+     * @param string $key Key inside the serialized value.
+     * @param string $formfield Moodle form field name.
+     * @param string $label Language string identifier.
+     * @param array $control Control metadata.
+     * @return array Setting definition.
+     */
+    private static function serialized_definition(
+        string $storagefield,
+        string $key,
+        string $formfield,
+        string $label,
+        array $control
+    ): array {
         return [
             'source' => 'serialized',
             'sourcefield' => $storagefield,
@@ -812,6 +1203,14 @@ class field_registry {
         ];
     }
 
+    /**
+     * Build a sequence of numeric select options.
+     *
+     * @param int $min Minimum value.
+     * @param int $max Maximum value.
+     * @param array $prepend Options to place before the numeric sequence.
+     * @return array Select options.
+     */
     private static function number_options(int $min, int $max, array $prepend = []): array {
         $options = $prepend;
         for ($i = $min; $i <= $max; $i++) {
@@ -820,6 +1219,11 @@ class field_registry {
         return $options;
     }
 
+    /**
+     * Build percentage options from 0 to 100.
+     *
+     * @return array Select options.
+     */
     private static function percentage_options(): array {
         $options = [];
         for ($i = 0; $i <= 100; $i++) {
@@ -828,6 +1232,11 @@ class field_registry {
         return $options;
     }
 
+    /**
+     * Get available Forum type options.
+     *
+     * @return array Select options.
+     */
     private static function forum_type_options(): array {
         global $CFG;
         try {
@@ -839,7 +1248,7 @@ class field_registry {
                 }
             }
         } catch (\Throwable $e) {
-            // Use stable fallback values below.
+            $options = [];
         }
         return [
             'general' => get_string('valueforumgeneral', 'local_activitysettingstemplates'),
@@ -850,6 +1259,11 @@ class field_registry {
         ];
     }
 
+    /**
+     * Get available Forum subscription mode options.
+     *
+     * @return array Select options.
+     */
     private static function forum_subscription_options(): array {
         global $CFG;
         try {
@@ -861,7 +1275,7 @@ class field_registry {
                 }
             }
         } catch (\Throwable $e) {
-            // Fallback below.
+            $options = [];
         }
         return [
             0 => get_string('valueforumsubscribeoptional', 'local_activitysettingstemplates'),
@@ -871,6 +1285,11 @@ class field_registry {
         ];
     }
 
+    /**
+     * Get available Forum read-tracking options.
+     *
+     * @return array Select options.
+     */
     private static function forum_tracking_options(): array {
         global $CFG;
         try {
@@ -889,7 +1308,7 @@ class field_registry {
                 return $options;
             }
         } catch (\Throwable $e) {
-            // Fallback below.
+            $options = [];
         }
         return [
             0 => get_string('valueforumtrackingoff', 'local_activitysettingstemplates'),
@@ -898,6 +1317,11 @@ class field_registry {
         ];
     }
 
+    /**
+     * Get resource display options used by File, Page, and URL settings.
+     *
+     * @return array Select options.
+     */
     private static function resource_display_options(): array {
         return [
             0 => get_string('valuedisplayautomatic', 'local_activitysettingstemplates'),
@@ -910,6 +1334,11 @@ class field_registry {
         ];
     }
 
+    /**
+     * Get available Wiki format options.
+     *
+     * @return array Select options.
+     */
     private static function wiki_format_options(): array {
         global $CFG;
         try {
@@ -921,7 +1350,7 @@ class field_registry {
                 }
             }
         } catch (\Throwable $e) {
-            // Fallback below.
+            $options = [];
         }
         return [
             'html' => 'HTML',
@@ -930,6 +1359,11 @@ class field_registry {
         ];
     }
 
+    /**
+     * Get Lesson next-page behaviour options.
+     *
+     * @return array Select options.
+     */
     private static function lesson_nextpage_options(): array {
         global $CFG;
         $options = [0 => get_string('valuenormal', 'local_activitysettingstemplates')];
@@ -942,11 +1376,16 @@ class field_registry {
                 $options[LESSON_UNANSWEREDPAGE] = get_string('showanunansweredpage', 'lesson');
             }
         } catch (\Throwable $e) {
-            // The normal option remains valid.
+            $options = [0 => get_string('valuenormal', 'local_activitysettingstemplates')];
         }
         return $options;
     }
 
+    /**
+     * Get H5P grading method options.
+     *
+     * @return array Select options.
+     */
     private static function h5p_grademethod_options(): array {
         try {
             if (class_exists('\\mod_h5pactivity\\local\\manager')) {
@@ -956,7 +1395,7 @@ class field_registry {
                 }
             }
         } catch (\Throwable $e) {
-            // Fallback below.
+            $options = [];
         }
         return [
             1 => get_string('valueh5phighest', 'local_activitysettingstemplates'),
@@ -966,6 +1405,11 @@ class field_registry {
         ];
     }
 
+    /**
+     * Get H5P review mode options.
+     *
+     * @return array Select options.
+     */
     private static function h5p_reviewmode_options(): array {
         try {
             if (class_exists('\\mod_h5pactivity\\local\\manager')) {
@@ -975,7 +1419,7 @@ class field_registry {
                 }
             }
         } catch (\Throwable $e) {
-            // Fallback below.
+            $options = [];
         }
         return [
             0 => get_string('valueh5previewnone', 'local_activitysettingstemplates'),
@@ -983,6 +1427,11 @@ class field_registry {
         ];
     }
 
+    /**
+     * Get Workshop grading strategy options.
+     *
+     * @return array Select options.
+     */
     private static function workshop_strategy_options(): array {
         return [
             'accumulative' => get_string('valueworkshopaccumulative', 'local_activitysettingstemplates'),
@@ -992,6 +1441,11 @@ class field_registry {
         ];
     }
 
+    /**
+     * Get Workshop example-assessment options.
+     *
+     * @return array Select options.
+     */
     private static function workshop_example_options(): array {
         return [
             0 => get_string('valueexamplesvoluntary', 'local_activitysettingstemplates'),
@@ -1000,6 +1454,13 @@ class field_registry {
         ];
     }
 
+    /**
+     * Resolve SCORM options using Moodle helpers with a safe fallback.
+     *
+     * @param string $function Moodle SCORM helper function name.
+     * @param array $fallback Fallback options.
+     * @return array Select options.
+     */
     private static function scorm_options(string $function, array $fallback): array {
         global $CFG;
         try {
@@ -1011,11 +1472,16 @@ class field_registry {
                 }
             }
         } catch (\Throwable $e) {
-            // Use supplied fallback.
+            return $fallback;
         }
         return $fallback;
     }
 
+    /**
+     * Get SCORM grading method options.
+     *
+     * @return array Select options.
+     */
     private static function scorm_grademethod_options(): array {
         return [
             0 => get_string('valuescormhighest', 'local_activitysettingstemplates'),
@@ -1025,10 +1491,24 @@ class field_registry {
         ];
     }
 
+    /**
+     * Build a basic instance-backed setting definition.
+     *
+     * @param string $field Instance field name.
+     * @param string $label Language string identifier.
+     * @return array Setting definition.
+     */
     private static function instance_definition(string $field, string $label): array {
         return ['source' => 'instance', 'sourcefield' => $field, 'formfield' => $field, 'label' => $label];
     }
 
+    /**
+     * Discover conservative reusable fields for a third-party module.
+     *
+     * @param string $moduletype Module name.
+     * @param array $existingformfields Fields already defined explicitly.
+     * @return array Detected setting definitions.
+     */
     private static function get_detected_instance_definitions(string $moduletype, array $existingformfields): array {
         global $DB;
         try {
@@ -1048,8 +1528,12 @@ class field_registry {
             }
             $metatype = (string)($column->meta_type ?? '');
             $isboolean = self::looks_like_boolean_field($name, $column);
-            $control = $isboolean ? self::bool_control() : self::number_control(0,
-                in_array($metatype, ['N', 'F'], true) ? PARAM_FLOAT : PARAM_INT);
+            $control = $isboolean
+                ? self::bool_control()
+                : self::number_control(
+                    0,
+                    in_array($metatype, ['N', 'F'], true) ? PARAM_FLOAT : PARAM_INT
+                );
             $fields['auto_' . $name] = [
                 'source' => 'instance',
                 'sourcefield' => $name,
@@ -1065,6 +1549,13 @@ class field_registry {
         return $fields;
     }
 
+    /**
+     * Check whether an automatically discovered database field is safe to expose.
+     *
+     * @param string $name Field name.
+     * @param object $column Database column metadata.
+     * @return bool True when the field is safe for conservative discovery.
+     */
     private static function is_safe_detected_field(string $name, object $column): bool {
         if (in_array($name, self::EXCLUDED_INSTANCE_FIELDS, true)) {
             return false;
@@ -1085,17 +1576,35 @@ class field_registry {
             return true;
         }
         // Numeric fallback is intentionally narrow: only obvious reusable limits/counts.
-        return (bool)preg_match('/(max|min|limit|count|number|entries|attempts|attachments|pages|questions|replies|posts|articles|size|threshold)$/i', $name);
+        $pattern = '/(max|min|limit|count|number|entries|attempts|attachments|pages|questions|replies|posts|articles|'
+            . 'size|threshold)$/i';
+        return (bool)preg_match($pattern, $name);
     }
 
+    /**
+     * Check whether a discovered integer field has boolean semantics.
+     *
+     * @param string $name Field name.
+     * @param object $column Database column metadata.
+     * @return bool True when the field appears boolean.
+     */
     private static function looks_like_boolean_field(string $name, object $column): bool {
         $metatype = (string)($column->meta_type ?? '');
         if ($metatype !== 'I') {
             return false;
         }
-        return (bool)preg_match('/^(allow|enable|show|hide|force|require|prevent|use|track|notify|email|auto|multiple|anonymous|comments|approval|custom|practice|retake|review|display|lock)/i', $name);
+        $pattern = '/^(allow|enable|show|hide|force|require|prevent|use|track|notify|email|auto|multiple|anonymous|comments|'
+            . 'approval|custom|practice|retake|review|display|lock)/i';
+        return (bool)preg_match($pattern, $name);
     }
 
+    /**
+     * Resolve a native Moodle label without inventing a fallback label.
+     *
+     * @param string $moduletype Module name.
+     * @param string $field Field name.
+     * @return string|null Localised label, or null when none exists.
+     */
     private static function resolve_native_field_label_strict(string $moduletype, string $field): ?string {
         $stringman = get_string_manager();
         $component = 'mod_' . $moduletype;
@@ -1113,16 +1622,35 @@ class field_registry {
         return null;
     }
 
+    /**
+     * Resolve a native Moodle label with a humanised fallback.
+     *
+     * @param string $moduletype Module name.
+     * @param string $field Field name.
+     * @return string Localised or humanised label.
+     */
     private static function resolve_native_field_label(string $moduletype, string $field): string {
         return self::resolve_native_field_label_strict($moduletype, $field) ?? self::humanise_field_name($field);
     }
 
+    /**
+     * Convert an internal field name into a readable fallback label.
+     *
+     * @param string $field Field name.
+     * @return string Humanised field label.
+     */
     private static function humanise_field_name(string $field): string {
         $field = preg_replace('/([a-z])([A-Z])/', '$1 $2', $field);
         $field = str_replace(['_', '-'], ' ', $field);
         return ucfirst(trim(preg_replace('/\s+/', ' ', $field)));
     }
 
+    /**
+     * Get all setting definitions indexed by registry key.
+     *
+     * @param string $moduletype Module name.
+     * @return array Flat setting definitions.
+     */
     public static function get_flat_definitions(string $moduletype): array {
         $flat = [];
         foreach (self::get_definitions($moduletype) as $section) {
@@ -1134,7 +1662,11 @@ class field_registry {
     }
 
     /**
-     * Normalise templates created before the curated Quiz registry.
+     * Normalise stored template configuration for the current registry.
+     *
+     * @param string $moduletype Module name.
+     * @param array $config Stored configuration.
+     * @return array Normalised configuration.
      */
     public static function normalise_stored_config(string $moduletype, array $config): array {
         if ($moduletype === 'quiz') {
@@ -1145,8 +1677,10 @@ class field_registry {
                 }
                 $stored = (int)$config[$sourcefield];
                 foreach (self::REVIEW_PERIODS as $period => $mask) {
-                    if (($period === 'during' && $short === 'attempt') ||
-                            ($period === 'during' && $short === 'overallfeedback')) {
+                    if (
+                        ($period === 'during' && $short === 'attempt')
+                        || ($period === 'during' && $short === 'overallfeedback')
+                    ) {
                         continue;
                     }
                     $formfield = $short . $period;
@@ -1170,6 +1704,13 @@ class field_registry {
         return $config;
     }
 
+    /**
+     * Get editor metadata for a module form field.
+     *
+     * @param string $moduletype Module name.
+     * @param string $formfield Moodle form field name.
+     * @return array Control metadata.
+     */
     public static function get_editor_control(string $moduletype, string $formfield): array {
         foreach (self::get_flat_definitions($moduletype) as $definition) {
             if (($definition['formfield'] ?? '') === $formfield && !empty($definition['control'])) {
@@ -1183,11 +1724,18 @@ class field_registry {
             'markingallocation', 'completionview', 'attemptonlast', 'canredoquestions', 'precreateattempts',
             'showblocks', 'allowofflineattempts', 'completionattemptsexhausted',
         ];
-        if (preg_match('/^(attempt|correctness|maxmarks|marks|specificfeedback|generalfeedback|rightanswer|overallfeedback)(during|immediately|open|closed)$/', $formfield)) {
+        $reviewpattern = '/^(attempt|correctness|maxmarks|marks|specificfeedback|generalfeedback|rightanswer|overallfeedback)'
+            . '(during|immediately|open|closed)$/';
+        if (preg_match($reviewpattern, $formfield)) {
             $booleanfields[] = $formfield;
         }
         if (in_array($formfield, $booleanfields, true)) {
-            return ['type' => 'select', 'options' => [0 => get_string('no'), 1 => get_string('yes')], 'param' => PARAM_INT, 'default' => 0];
+            return [
+                'type' => 'select',
+                'options' => [0 => get_string('no'), 1 => get_string('yes')],
+                'param' => PARAM_INT,
+                'default' => 0,
+            ];
         }
         if (in_array($formfield, ['delay1', 'delay2', 'graceperiod'], true)) {
             return ['type' => 'duration', 'param' => PARAM_INT, 'default' => 0];
@@ -1210,7 +1758,11 @@ class field_registry {
         if ($moduletype === 'quiz') {
             if ($formfield === 'attempts') {
                 $options = [0 => get_string('valueunlimited', 'local_activitysettingstemplates')];
-                for ($i = 1; $i <= 10; $i++) { $options[$i] = (string)$i; }
+                for ($i = 1; $i <= 10; $i++) {
+
+                    $options[$i] = (string)$i;
+
+                }
                 return ['type' => 'select', 'options' => $options, 'param' => PARAM_INT, 'default' => 1];
             }
             if ($formfield === 'grademethod') {
@@ -1240,17 +1792,29 @@ class field_registry {
             }
             if ($formfield === 'questionsperpage') {
                 $options = [0 => get_string('valuenever', 'local_activitysettingstemplates')];
-                for ($i = 1; $i <= 50; $i++) { $options[$i] = (string)$i; }
+                for ($i = 1; $i <= 50; $i++) {
+
+                    $options[$i] = (string)$i;
+
+                }
                 return ['type' => 'select', 'options' => $options, 'param' => PARAM_INT, 'default' => 1];
             }
             if ($formfield === 'decimalpoints') {
                 $options = [];
-                for ($i = 0; $i <= 5; $i++) { $options[$i] = (string)$i; }
+                for ($i = 0; $i <= 5; $i++) {
+
+                    $options[$i] = (string)$i;
+
+                }
                 return ['type' => 'select', 'options' => $options, 'param' => PARAM_INT, 'default' => 2];
             }
             if ($formfield === 'questiondecimalpoints') {
                 $options = [-1 => get_string('valuesameasoverallgrade', 'local_activitysettingstemplates')];
-                for ($i = 0; $i <= 5; $i++) { $options[$i] = (string)$i; }
+                for ($i = 0; $i <= 5; $i++) {
+
+                    $options[$i] = (string)$i;
+
+                }
                 return ['type' => 'select', 'options' => $options, 'param' => PARAM_INT, 'default' => -1];
             }
             if ($formfield === 'overduehandling') {
@@ -1274,7 +1838,7 @@ class field_registry {
                         $options = \mod_quiz\access_manager::get_browser_security_choices();
                     }
                 } catch (\Throwable $e) {
-                    // Keep the safe fallback.
+                    $options = ['-' => get_string('valuebrowsersecuritynone', 'local_activitysettingstemplates')];
                 }
                 return ['type' => 'select', 'options' => $options, 'param' => PARAM_RAW_TRIMMED, 'default' => '-'];
             }
@@ -1293,7 +1857,11 @@ class field_registry {
             }
             if ($formfield === 'maxattempts') {
                 $options = [-1 => get_string('valueunlimited', 'local_activitysettingstemplates')];
-                for ($i = 1; $i <= 30; $i++) { $options[$i] = (string)$i; }
+                for ($i = 1; $i <= 30; $i++) {
+
+                    $options[$i] = (string)$i;
+
+                }
                 return ['type' => 'select', 'options' => $options, 'param' => PARAM_INT, 'default' => -1];
             }
         }
@@ -1303,8 +1871,12 @@ class field_registry {
                 continue;
             }
             $metatype = (string)($definition['metatype'] ?? '');
-            if ($metatype === 'I') { return ['type' => 'number', 'param' => PARAM_INT, 'default' => 0]; }
-            if (in_array($metatype, ['N', 'F'], true)) { return ['type' => 'number', 'param' => PARAM_FLOAT, 'default' => 0]; }
+            if ($metatype === 'I') {
+                return ['type' => 'number', 'param' => PARAM_INT, 'default' => 0];
+            }
+            if (in_array($metatype, ['N', 'F'], true)) {
+                return ['type' => 'number', 'param' => PARAM_FLOAT, 'default' => 0];
+            }
             break;
         }
         return ['type' => 'text', 'param' => PARAM_TEXT, 'default' => ''];
@@ -1312,6 +1884,11 @@ class field_registry {
 
     /**
      * Format a stored scalar using the same editor metadata used by the edit form.
+     *
+     * @param string $moduletype Module name.
+     * @param string $formfield Moodle form field name.
+     * @param mixed $value Stored value.
+     * @return string Teacher-facing formatted value.
      */
     public static function format_stored_value(string $moduletype, string $formfield, $value): string {
         $control = self::get_editor_control($moduletype, $formfield);
@@ -1351,6 +1928,12 @@ class field_registry {
         return array_values(array_unique($fields));
     }
 
+    /**
+     * Split a duration in seconds into a number and a suitable unit.
+     *
+     * @param int $seconds Duration in seconds.
+     * @return array Two-item array containing value and unit in seconds.
+     */
     public static function split_duration(int $seconds): array {
         $seconds = max(0, $seconds);
         foreach ([86400, 3600, 60, 1] as $unit) {
@@ -1364,6 +1947,11 @@ class field_registry {
         return [$seconds, 1];
     }
 
+    /**
+     * Get duration units accepted by Moodle duration controls.
+     *
+     * @return array Unit values and labels.
+     */
     public static function duration_units(): array {
         return [
             1 => get_string('seconds'),
@@ -1373,6 +1961,15 @@ class field_registry {
         ];
     }
 
+    /**
+     * Extract selected reusable settings from an activity and its course-module record.
+     *
+     * @param string $moduletype Module name.
+     * @param \stdClass $cm Course-module record.
+     * @param \stdClass $instance Activity instance record.
+     * @param array $selectedkeys Registry keys selected by the teacher.
+     * @return array Normalised reusable configuration.
+     */
     public static function extract_config(string $moduletype, \stdClass $cm, \stdClass $instance, array $selectedkeys): array {
         $definitions = self::get_flat_definitions($moduletype);
         $config = [];
@@ -1409,6 +2006,12 @@ class field_registry {
         return self::normalise_stored_config($moduletype, $config);
     }
 
+    /**
+     * Decode Moodle serialized array data safely.
+     *
+     * @param mixed $value Stored value.
+     * @return array Decoded array or an empty array.
+     */
     private static function decode_serialized_array($value): array {
         if (is_array($value)) {
             return $value;
@@ -1424,7 +2027,7 @@ class field_registry {
                 }
             }
         } catch (\Throwable $e) {
-            // Fall through to PHP unserialize.
+            $decoded = null;
         }
         try {
             $decoded = @unserialize($value, ['allowed_classes' => false]);

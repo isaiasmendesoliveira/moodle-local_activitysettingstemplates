@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Upgrade steps for Activity Settings Templates.
@@ -22,7 +22,6 @@
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Upgrade Activity Settings Templates.
@@ -44,6 +43,11 @@ function xmldb_local_activitysettingstemplates_upgrade(int $oldversion): bool {
         }
 
         upgrade_plugin_savepoint(true, 2026090813, 'local', 'activitysettingstemplates');
+    }
+
+    if ($oldversion < 2026091000) {
+        // Code-quality and packaging maintenance release; no database schema changes are required.
+        upgrade_plugin_savepoint(true, 2026091000, 'local', 'activitysettingstemplates');
     }
 
     return true;

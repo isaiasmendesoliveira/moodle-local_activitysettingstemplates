@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Form definition for editing personal activity settings templates.
@@ -34,7 +34,6 @@ use local_activitysettingstemplates\local\field_registry;
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class edit_template_form extends \moodleform {
-
     /**
      * Form definition.
      */
@@ -53,23 +52,34 @@ class edit_template_form extends \moodleform {
         $mform->setType('courseid', PARAM_INT);
 
         $mform->addElement('header', 'presetdetails', get_string('presetdetails', 'local_activitysettingstemplates'));
-        $mform->addElement('static', 'activitytype', get_string('activitytype', 'local_activitysettingstemplates'),
-            field_registry::get_module_name($moduletype));
+        $mform->addElement(
+            'static',
+            'activitytype',
+            get_string('activitytype', 'local_activitysettingstemplates'),
+            field_registry::get_module_name($moduletype)
+        );
 
         $mform->addElement('text', 'presetname', get_string('presetname', 'local_activitysettingstemplates'), ['size' => 50]);
         $mform->setType('presetname', PARAM_TEXT);
         $mform->addRule('presetname', get_string('required'), 'required', null, 'client');
         $mform->addRule('presetname', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $mform->addElement('textarea', 'description', get_string('description', 'local_activitysettingstemplates'),
-            ['rows' => 3, 'cols' => 60]);
+        $mform->addElement(
+            'textarea',
+            'description',
+            get_string('description', 'local_activitysettingstemplates'),
+            ['rows' => 3, 'cols' => 60]
+        );
         $mform->setType('description', PARAM_TEXT);
 
         $mform->addElement('static', 'edithelp', '', get_string('editpresethelp', 'local_activitysettingstemplates'));
 
         foreach (field_registry::get_definitions($moduletype) as $sectionkey => $section) {
-            $mform->addElement('header', 'section_' . $sectionkey,
-                field_registry::get_section_label($section));
+            $mform->addElement(
+                'header',
+                'section_' . $sectionkey,
+                field_registry::get_section_label($section)
+            );
 
             foreach ($section['fields'] as $key => $definition) {
                 $formfield = $definition['formfield'];
@@ -86,13 +96,19 @@ class edit_template_form extends \moodleform {
 
                 if ($control['type'] === 'select') {
                     $options = $control['options'];
-                    if (!array_key_exists($currentvalue, $options)
-                            && !array_key_exists((string)$currentvalue, $options)) {
-                        $options[$currentvalue] = get_string('currentstoredvalue', 'local_activitysettingstemplates', (string)$currentvalue);
+                    if (
+                        !array_key_exists($currentvalue, $options)
+                        && !array_key_exists((string)$currentvalue, $options)
+                    ) {
+                        $options[$currentvalue] = get_string(
+                            'currentstoredvalue',
+                            'local_activitysettingstemplates',
+                            (string)$currentvalue
+                        );
                     }
                     $value = $mform->createElement('select', 'value_' . $key, '', $options);
                     $groupitems = [$include, $value];
-                } else if ($control['type'] === 'duration') {
+                } elseif ($control['type'] === 'duration') {
                     [$durationnumber, $durationunit] = field_registry::split_duration((int)$currentvalue);
                     $number = $mform->createElement('text', 'value_' . $key . '_number', '', [
                         'size' => 6,
@@ -100,7 +116,7 @@ class edit_template_form extends \moodleform {
                     ]);
                     $unit = $mform->createElement('select', 'value_' . $key . '_unit', '', field_registry::duration_units());
                     $groupitems = [$include, $number, $unit];
-                } else if ($control['type'] === 'number') {
+                } elseif ($control['type'] === 'number') {
                     $attributes = ['size' => 8, 'inputmode' => 'numeric'];
                     $value = $mform->createElement('text', 'value_' . $key, '', $attributes);
                     $groupitems = [$include, $value];

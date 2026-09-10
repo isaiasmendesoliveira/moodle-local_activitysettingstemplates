@@ -344,9 +344,12 @@ const setStatus = (message, variant = 'success') => {
         return;
     }
 
-    const alertClass = variant === 'warning' ? 'alert-warning'
-        : variant === 'danger' ? 'alert-danger'
-            : 'alert-success';
+    let alertClass = 'alert-success';
+    if (variant === 'warning') {
+        alertClass = 'alert-warning';
+    } else if (variant === 'danger') {
+        alertClass = 'alert-danger';
+    }
     status.classList.add(alertClass);
     status.classList.remove('d-none');
 };
