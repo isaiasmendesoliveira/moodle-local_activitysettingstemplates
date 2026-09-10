@@ -108,7 +108,7 @@ class edit_template_form extends \moodleform {
                     }
                     $value = $mform->createElement('select', 'value_' . $key, '', $options);
                     $groupitems = [$include, $value];
-                } elseif ($control['type'] === 'duration') {
+                } else if ($control['type'] === 'duration') {
                     [$durationnumber, $durationunit] = field_registry::split_duration((int)$currentvalue);
                     $number = $mform->createElement('text', 'value_' . $key . '_number', '', [
                         'size' => 6,
@@ -116,7 +116,7 @@ class edit_template_form extends \moodleform {
                     ]);
                     $unit = $mform->createElement('select', 'value_' . $key . '_unit', '', field_registry::duration_units());
                     $groupitems = [$include, $number, $unit];
-                } elseif ($control['type'] === 'number') {
+                } else if ($control['type'] === 'number') {
                     $attributes = ['size' => 8, 'inputmode' => 'numeric'];
                     $value = $mform->createElement('text', 'value_' . $key, '', $attributes);
                     $groupitems = [$include, $value];
