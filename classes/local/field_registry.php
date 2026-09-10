@@ -1759,9 +1759,7 @@ class field_registry {
             if ($formfield === 'attempts') {
                 $options = [0 => get_string('valueunlimited', 'local_activitysettingstemplates')];
                 for ($i = 1; $i <= 10; $i++) {
-
                     $options[$i] = (string)$i;
-
                 }
                 return ['type' => 'select', 'options' => $options, 'param' => PARAM_INT, 'default' => 1];
             }
@@ -1793,27 +1791,21 @@ class field_registry {
             if ($formfield === 'questionsperpage') {
                 $options = [0 => get_string('valuenever', 'local_activitysettingstemplates')];
                 for ($i = 1; $i <= 50; $i++) {
-
                     $options[$i] = (string)$i;
-
                 }
                 return ['type' => 'select', 'options' => $options, 'param' => PARAM_INT, 'default' => 1];
             }
             if ($formfield === 'decimalpoints') {
                 $options = [];
                 for ($i = 0; $i <= 5; $i++) {
-
                     $options[$i] = (string)$i;
-
                 }
                 return ['type' => 'select', 'options' => $options, 'param' => PARAM_INT, 'default' => 2];
             }
             if ($formfield === 'questiondecimalpoints') {
                 $options = [-1 => get_string('valuesameasoverallgrade', 'local_activitysettingstemplates')];
                 for ($i = 0; $i <= 5; $i++) {
-
                     $options[$i] = (string)$i;
-
                 }
                 return ['type' => 'select', 'options' => $options, 'param' => PARAM_INT, 'default' => -1];
             }
@@ -1858,9 +1850,7 @@ class field_registry {
             if ($formfield === 'maxattempts') {
                 $options = [-1 => get_string('valueunlimited', 'local_activitysettingstemplates')];
                 for ($i = 1; $i <= 30; $i++) {
-
                     $options[$i] = (string)$i;
-
                 }
                 return ['type' => 'select', 'options' => $options, 'param' => PARAM_INT, 'default' => -1];
             }
