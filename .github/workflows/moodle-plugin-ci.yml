@@ -51,22 +51,31 @@ jobs:
         run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
         env:
           DB: pgsql
-          MOODLE_BRANCH: MOODLE_502_STABLE
+          MOODLE_BRANCH: MOODLE_405_STABLE
 
       - name: Build AMD files with Moodle Grunt
         shell: bash
         run: |
           set -euo pipefail
-          # Moodle 5.x keeps web-accessible plugin code under public/.
-          test -d moodle/public/local/activitysettingstemplates
+
+          if [ -d moodle/public/local/activitysettingstemplates ]; then
+            component_root="public/local/activitysettingstemplates"
+          elif [ -d moodle/local/activitysettingstemplates ]; then
+            component_root="local/activitysettingstemplates"
+          else
+            echo "Activity Settings Templates component directory was not found."
+            exit 1
+          fi
+
           cd moodle
-          npx grunt amd --root=public/local/activitysettingstemplates
+          npx grunt amd --root="$component_root"
           cd ..
-          # Copy the canonical build artifacts back to the Git checkout.
+
           mkdir -p plugin/amd/build
           rm -f plugin/amd/build/*.js plugin/amd/build/*.js.map
-          cp -v moodle/public/local/activitysettingstemplates/amd/build/*.js plugin/amd/build/
-          cp -v moodle/public/local/activitysettingstemplates/amd/build/*.js.map plugin/amd/build/
+          cp -v "moodle/$component_root"/amd/build/*.js plugin/amd/build/
+          cp -v "moodle/$component_root"/amd/build/*.js.map plugin/amd/build/
+
           echo "Generated AMD assets:"
           ls -la plugin/amd/build
           git -C plugin status --short amd/build
