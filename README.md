@@ -12,7 +12,8 @@ The plugin reduces repetitive configuration work, configuration errors, and cogn
 > Moodle: **4.5–5.2**  
 > License: **GNU GPL v3 or later**
 
-Documentation: **English** | [Português (Brasil)](docs/README.pt-BR.md) | [Español](docs/README.es.md)  
+Documentation: **English** | [Português (Brasil)](docs/README.pt-BR.md) | [Español](docs/README.es.md) 
+
 Technical documentation: [Architecture and implementation](docs/TECHNICAL.md)
 
 ## Why this plugin?
